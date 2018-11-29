@@ -12,7 +12,7 @@ import os
 import time
 import numpy as np
 import pyqtgraph as pg
-from PyQt4 import QtCore, QtGui
+from PyQt5 import QtCore, QtGui
 
 from video_layout import Ui_Form
 

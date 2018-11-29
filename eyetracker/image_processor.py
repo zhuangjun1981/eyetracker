@@ -16,9 +16,7 @@ Used by eyetracker.py and eyetrackergui.py
 
 import cv2
 import os
-from SimpleCV import *
-
-#from toolbox.misc.timer import timeit
+import math
 
 
 def get_abs_position(pos, roi):
@@ -231,78 +229,10 @@ class ImageProcessor(object):
     def set_led_roi(self, x0, y0, x1, y1):
         self.led_roi = (x0, y0, x1, y1)
 
-# def show_movie(video, show_intermediate=None, output=None):
-#     """
-#     Simple use example.
-#
-#     This has been replaced by the GUI, I doubt it even works anymore.
-#
-#     """
-#     #check what type of video here
-#     #for now assume simplecv virtual camera
-#     led_roi = (125,75,225,170)  #x1,y1,x2,y2
-#     pupil_roi = (40,40,300,200)
-#
-#     ip = ImageProcessor()
-#
-#     ip.pupil_roi = pupil_roi
-#     ip.led_roi = led_roi
-#
-#     display = Display()
-#
-#     while True:
-#         original_frame = video.getImage()
-#         frame = ip.preprocess(original_frame)
-#         led = ip.find_led(frame)
-#         if led:
-#             led_pos = get_abs_position(led.centroid(), ip.led_roi)
-#             frame.drawCircle(led_pos, led.radius(), color=(0,255,0),
-#                              thickness=2)
-#         else:
-#             led_pos=None
-#         pupil = ip.find_pupil(frame)
-#
-#         if pupil:
-#             pupil_pos = get_abs_position(pupil.centroid(), ip.pupil_roi)
-#             frame.drawCircle(pupil_pos, pupil.radius(), color=(255,0,0),
-#                              thickness=2)
-#
-#         frame = frame.applyLayers()
-#
-#         if show_intermediate:
-#             try:
-#                 img = getattr(ip, show_intermediate)
-#                 frame = frame.sideBySide(img)
-#             except Exception as e:
-#                 print("Couldn't show intermediate step:", e)
-#                 show_intermediate = None
-#
-#         frame.save(display)
-#
-#         if output:
-#             frame.save(output)
-#
-#         events = display.checkEvents()
-#
-#         if events:
-#             print(events)
-#             if events[0] == 27:
-#                 display.quit()
-#                 break
-#         time.sleep(0.001)
-
 
 def main():
 
-    path = r"\\aibsdata2\nc-ophys\CorticalMapping\eyetracking\140821112446-KSstim-mouse148845-Jun-124-0.avi"
-    video = VirtualCamera(path, "video")
-
-    output = False #VideoStream("C:/Users/derricw/Videos/jun0_output.avi", 25, False)
-
-    # show_movie(video, show_intermediate="combined", output=output)
-
-
-
+    pass
 
 
 if __name__ == "__main__":

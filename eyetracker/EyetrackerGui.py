@@ -16,28 +16,21 @@ Main purpose is to load eyetracking videos and process them.
 CLI counterpart is "eyetracker.py"
 
 '''
-from __future__ import print_function
 import sys
 import os
 import io
 import ConfigParser
-import datetime
 import time
-from PyQt4 import QtCore, QtGui
+from PyQt5 import QtCore, QtGui
 import numpy as np
-import socket
-import subprocess
 import platform
 
-from SimpleCV import *
 import pyqtgraph as pg
 
 from image_processor import ImageProcessor
-#from gazetracker import Gazetracker
 from mainwindow_layout import Ui_MainWindow
 from video_view import VideoView as Video
 from plot_view import PlotView
-#from toolbox.misc.timer import timeit
 
 if platform.system().lower() in ['linux', 'darwin']:
     HOME = os.path.expanduser("~/eyetracker")

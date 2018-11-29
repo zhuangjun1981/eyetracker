@@ -129,7 +129,6 @@ Thumbs.db
 Desktop.ini
 
 # Other config files
-*.cfg
 *.dat
 
 #############

@@ -12,7 +12,7 @@ import os
 import time
 import numpy as np
 import pyqtgraph as pg
-from PyQt4 import QtCore, QtGui
+from PyQt5 import QtCore, QtGui
 
 from plot_layout import Ui_Form
 
@@ -77,7 +77,7 @@ class PlotView(QtGui.QDialog):
                 self.y = self.y*pos[1]
                 self._p_init = True
             self._pupil_pos = pos
-            
+
         else:
             #no new position
             if self._pupil_pos:

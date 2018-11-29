@@ -1,9 +1,14 @@
 name: eyetracker3
+channels:
+  - menpo
 dependencies:
   - python = 3
   - numpy
-  - opencv
+  - opencv3
   - pyqt
   - qtpy
   - h5py
   - pyqtgraph
+  - configparser
+  - pip:
+    - configparser

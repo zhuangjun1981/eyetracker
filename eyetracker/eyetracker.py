@@ -18,8 +18,6 @@ import ConfigParser
 import h5py
 import datetime
 import numpy as np
-
-from SimpleCV import *
 import cv2
 
 from image_processor import ImageProcessor
@@ -346,7 +344,7 @@ def main():
                 #raw_input("Processing completed without errors. Press enter to close...")
     except Exception as e:
         print(type(e), e)
-        raw_input("Processing completed with errors. Press enter to close...")
+        input("Processing completed with errors. Press enter to close...")
 
 
 def get_zenith(displacement_y_pix, mm_per_pix, eyeball_radius_mm=1.65):
