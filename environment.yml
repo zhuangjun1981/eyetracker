@@ -1,0 +1,9 @@
+name: eyetracker3
+dependencies:
+  - python = 3
+  - numpy
+  - opencv
+  - pyqt
+  - qtpy
+  - h5py
+  - pyqtgraph
