@@ -10,5 +10,6 @@ dependencies:
   - h5py
   - pyqtgraph
   - configparser
+  - matplotlib # this may not be required
   - pip:
     - configparser

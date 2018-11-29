@@ -231,7 +231,6 @@ class ImageProcessor(object):
 
 
 def main():
-
     pass
 
 

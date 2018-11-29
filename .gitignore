@@ -136,7 +136,7 @@ Desktop.ini
 #############
 
 *.py[co]
-*.npy
+#*.npy
 *.pkl
 *.pickle
 
