@@ -48,11 +48,25 @@ class TestImageProcessor(unittest.TestCase):
 
         cv2.destroyAllWindows()
 
+    def test_temp2(self):
+        img = np.load(os.path.join('test_files', 'test_img.npy'))
+        det = ip.PupilLedDetector(led_roi=(200, 300, 280, 400),
+                                  pupil_roi=(100, 350, 200, 500))
+        det.load_first_frame(frame=img)
+        det.detect()
+        det.show_results()
+        import matplotlib.pyplot as plt
+        plt.show()
+
     def test_Ellipse_get_binary_mask(self):
         import matplotlib.pyplot as plt
         ell = ip.Ellipse(center=(120.5, 70.8), axes=(22.6, 5.7), angle=25.5)
-        mask = ell.get_binary_mask((256, 256))
-        plt.imshow(mask)
+        mask = ell.get_binary_mask((256, 256)) * 255
+        img = cv2.cvtColor(src=mask, code=cv2.COLOR_GRAY2BGR)
+        ell_cv2 = ell.get_cv2_ellips()
+        cv2.ellipse(img=img, center=ell_cv2[0], axes=ell_cv2[1], angle=ell_cv2[2], startAngle=ell_cv2[3],
+                    endAngle=ell_cv2[4], color=(0, 255, 0), thickness=1)
+        plt.imshow(img)
         plt.colorbar()
         plt.show()
 
