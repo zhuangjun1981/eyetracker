@@ -1,22 +1,18 @@
-#!/usr/bin/env python
-"""
-image_processing.py
+'''
+module to detect pupil and LED reflection
+'''
 
-Allen Institute for Brain Science
-
-@author: derricw
-
-Created on Sep 1, 2014
-
-Derric's new eyetracking algorithm.
-
-Used by eyetracker.py and eyetrackergui.py
-
-"""
-
+import numpy as np
 import cv2
-import os
-import math
+
+
+def apply_roi(img, roi):
+    """
+    :param img: 2d array
+    :param roi: [min_height, max_height, min_width, max_width]
+    :return: cropped image defined by roi
+    """
+    return img[roi[0]:roi[1], roi[2]:roi[3]]
 
 
 def get_abs_position(pos, roi):
@@ -37,202 +33,180 @@ def get_relative_position(pos, roi):
 
 def dist2d(p1, p2):
     """ Returns the distance between two 2d points """
-    return math.sqrt((p2[0] - p1[0]) ** 2 +
-                     (p2[1] - p1[1]) ** 2)
+    return np.sqrt((p2[0] - p1[0]) ** 2 +
+                   (p2[1] - p1[1]) ** 2)
 
 
-#@timeit
-def filter_features(featureset, ideal=None):
-    """
-    Returns the best match to the ideal.
+class Ellipse(object):
 
-    Uses position, radius, and circle distance to score features and return
-        the one with the minimum score.
+    def __init__(self, center, axes, angle):
+        """
+        ellipse object to mark pupil and LED
 
-    TODO: Make this not garbage.
+        :param center: tuple of two positive floats, (center height, center width)
+        :param axes: tuple of two positive floats, (length of first axis, length of second axis)
+        :param angle: float, degree, clockwise rotation of first axis
+        """
+        self.center = center
+        self.axes = axes
+        self.angle = angle
 
-    """
-    if ideal is None:
-        return featureset[-1]
-    scores = []
-    pos0 = ideal.centroid()
-    rad0 = ideal.radius()
-    circle0 = ideal.circleDistance()
-    for feature in featureset:
-        pos1 = feature.centroid()
-        rad1 = feature.radius()
-        circle1 = feature.circleDistance()
-        dpos = dist2d(pos0, pos1)
-        drad = abs(rad0-rad1)
-        dcircle = abs(circle0-circle1)
-        scores.append(dpos+drad+dcircle)
-    return featureset[scores.index(min(scores))]
+    def get_area(self):
+        return np.pi * self.axes[0] * self.axes[1]
+
+    def get_binary_mask(self, shape):
+        """
+        :param shape: tuple of 2 positive integers (height, width)
+        :return: binary mask of the ellipse with given shape
+        """
+        mask = np.zeros(shape=shape, dtype=np.uint8)
+        mask = cv2.ellipse(mask,
+                           center=(int(self.center[0]), int(self.center[1])),
+                           axes=(int(self.axes[0]), int(self.axes[1])),
+                           angle=self.angle,
+                           startAngle=0,
+                           endAngle=360,
+                           color=1,
+                           thickness=-1)
+        return mask
+
+    def get_intensity(self, img):
+        """
+        :param img: 2d gray scale image
+        :return: mean intensity of ellipse
+        """
+
+        if len(img.shape) != 2:
+            raise ValueError('input image should be 2d array.')
+
+        mask = self.get_binary_mask(img.shape)
+        return np.mean(img[mask])
 
 
-class ImageProcessor(object):
-    """ Processes an img of a mouse eye."""
+class PupilLedDetector(object):
+
     def __init__(self):
 
-        super(ImageProcessor, self).__init__()
+        # # some stuff we want to track between frames
+        # self.last_pupil = None  # ellipse object
+        # self.last_led = None  # ellipse object
+        # self.last_pupil_velocity = (0, 0)
 
-        #options from constructor
-        self.pupil_roi = None
-        self.led_roi = None
-        #self.img_type = img_type
+        # # ----------------------------------------------------------------------
+        # # images we want to track for displaying intermediate processing steps
+        # self.original = None
+        #
+        # self.led_region = None
+        # self.led_thresholded = None
+        # self.led_blurred = None
+        # self.led_openclosed = None
+        # self.led_contoured = None  # cropped shape
+        # self.led_annotated = None  # original shape
+        #
+        # self.pupil_region = None  # after masking LED
+        # self.pupil_thresholded = None  # intensity reversed
+        # self.pupil_blurred = None
+        # self.pupil_openclosed = None
+        # self.pupil_contoured = None  # cropped shape, with LED annotation
+        # self.pupil_annotated = None  # original shape, with LED annotation
 
-        #some stuff we want to track between frames
-        self.last_pupil = None
-        self.last_led = None
-
-        self.last_pupil_velocity = (0, 0)
-        #self.last_led_velocity = (0, 0)  #probably not necessary
-
-        #----------------------------------------------------------------------
-        #images we want to track for displaying intermediate processing steps
-        self.original = None
-        self.pupil_region = None
-        self.led_region = None
-        self.eroded = None
-        self.edges = None
-        self.combined = None
-        self.pupil_binary = None
-        self.led_binary = None
-
-        #----------------------------------------------------------------------
-        #some stuff we want to allow the user to tweak
+        # ----------------------------------------------------------------------
+        # some stuff we want to allow the user to tweak
         # pupil
-        self.pupil_blur = 2
-        self.pupil_dilate = 4
-        self.pupil_erode = 5
-        self.mask_circle_thickness = 40
+        self.pupil_roi = None
         self.pupil_binary_thresh = 210
+        self.pupil_blur = 2
+        self.pupil_openclose = 4
         self.pupil_min_size = 100
+
         # led
+        self.led_roi = None
         self.led_binary_thresh = 200
+        self.led_blur = 2
+        self.led_openclose = 4
         self.led_min_size = 1
-        self.led_mask_circle_thickness = 5
+        self.led_max_size = 200
+        self.led_mask_dilation = 5
+
         # preprocessing
-        self.equalize = False
+        self.equalize = True
 
-    #@timeit
-    def find_pupil(self, img):
+        self.clear()
+
+    def clear(self):
         """
-        Finds a pupil in an image.
+        clear processing results of current frame, but keep frame history information
         """
-        # get roi from original img
-        if self.pupil_roi is not None:
-            try:
-                self.pupil_region = img.regionSelect(*self.pupil_roi)  # should this be here?
-                if self.pupil_region is None:
-                    #some versions of SimpleCV don't error, they return none.
-                    self.pupil_region = img
-            except:
-                self.pupil_region = img
-                print("Pupil ROI outside image.")
-        else:
-            self.pupil_region = img
-        if self.last_led:
-            led_pos = get_abs_position(self.last_led.centroid(), self.led_roi)
-            led_radius = self.last_led.radius()
-            if self.last_pupil:
-                color = self.last_pupil.meanColor()
-                color = (int(color[0]), int(color[1]), int(color[2]))
-            else:
-                #guess the last color
-                color = (0, 0, 0)
-            self.pupil_region.drawCircle(get_relative_position(led_pos,
-                                                               self.pupil_roi),
-                                         led_radius+self.led_mask_circle_thickness,
-                                         color=color,
-                                         thickness=-1)
-        #erode image to remove small speckle
-        self.eroded = self.pupil_region.applyLayers().morphClose().blur(
-            self.pupil_blur).erode(self.pupil_erode).blur(
-            self.pupil_blur).morphClose()
+        # ----------------------------------------------------------------------
+        # images we want to track for displaying intermediate processing steps
+        self.original = None
+        self.preprocessed = None
 
-        #find edges and make em thick
-        self.edges = self.eroded.edges().dilate(self.pupil_dilate)
-        self.combined = self.edges+self.eroded
-        if self.last_pupil:
-            #interpolate movement here
-            #should happen here when this is a class
-            try:
-                self.combined.drawCircle(self.last_pupil.centroid(),
-                                         self.last_pupil.radius()-1,
-                                         color=(0, 0, 0),
-                                         thickness=-1)
-                self.combined.drawCircle(self.last_pupil.centroid(),
-                                         self.last_pupil.radius()+10,
-                                         color=(255, 255, 255),
-                                         thickness=5)
-                self.combined.drawCircle(self.last_pupil.centroid(),
-                                         self.last_pupil.radius()+50,
-                                         color=(255, 255, 255),
-                                         thickness=self.mask_circle_thickness)
-            except ValueError as e:
-                print("Couldn't draw mask circle. Adjust the size:", e)
+        self.led_region = None
+        self.led_thresholded = None
+        self.led_blurred = None
+        self.led_openclosed = None
+        self.led_contoured = None  # cropped shape
+        self.led_annotated = None  # original shape
 
-        self.pupil_binary = self.combined.applyLayers().invert().binarize(
-            self.pupil_binary_thresh).invert()
+        self.pupil_region = None  # after masking LED
+        self.pupil_thresholded = None  # intensity reversed
+        self.pupil_blurred = None
+        self.pupil_openclosed = None
+        self.pupil_contoured = None  # cropped shape, with LED annotation
+        self.pupil_annotated = None  # original shape, with LED annotation
 
-        blobs = self.pupil_region.findBlobsFromMask(self.pupil_binary,
-                                                    minsize=self.pupil_min_size)
-        if blobs:
-            pupil = filter_features(blobs, self.last_pupil)
-            self.last_pupil = pupil
-            return pupil
-        else:
+    def clear_all(self):
+        """
+        clear all frame information, only keep processing parameters
+        """
+        self.clear()
+
+        # some stuff we want to track between frames
+        self.last_pupil = None  # ellipse object
+        self.last_led = None  # ellipse object
+        self.last_pupil_velocity = (0, 0)
+
+    def _find_led(self):
+        self.led_region = apply_roi(self.preprocessed, self.led_roi)
+        _, self.led_thresholded = cv2.threshold(src=self.led_region, thresh=self.led_binary_thresh, maxval=255,
+                                                type=cv2.THRESH_BINARY)
+        self.led_blurred = cv2.blur(src=self.led_thresholded, ksize=(self.led_blur, self.led_blur))
+        led_openclose_ker = np.ones((self.led_openclose, self.led_openclose), dtype=np.uint8)
+        self.led_openclosed= cv2.morphologyEx(self.led_blurred, cv2.MORPH_OPEN, kernel=led_openclose_ker)
+        self.led_openclosed = cv2.morphologyEx(self.led_openclosed, cv2.MORPH_CLOSE, kernel=led_openclose_ker)
+        _, led_cons, _ = cv2.findContours(image=self.led_openclosed,
+                                          mode=cv2.RETR_TREE,
+                                          method=cv2.CHAIN_APPROX_SIMPLE)
+        print('number of led contours: {}'.format(len(led_cons)))
+        led_ell = cv2.fitEllipse(led_cons[0])
+        # opencv fitEllipse give the center as (x, y) needs to be swapped to (height, width)
+        led_center = get_abs_position((led_ell[0][1], led_ell[0][0]), self.led_roi)
+
+        led = Ellipse(center=led_center, axes=led_ell[1], angle=led_ell[2])
+        if led.get_area() < self.led_min_size or led.get_area() > self.led_max_size:
             return None
-
-    def find_led(self, img):
-        #if there is an ROI
-        if self.led_roi is not None:
-            try:
-                self.led_region = img.regionSelect(*self.led_roi)
-                #some versions of SimpleCV don't error they return None
-                if self.led_region is None:
-                    self.led_region = img
-            except:
-                #some versions error
-                self.led_region = img
-                print("LED ROI outside IMG")
-        #No ROI
         else:
-            self.led_region = img
-        self.led_binary = self.led_region.binarize(self.led_binary_thresh).invert()
-        blobs = self.led_region.findBlobsFromMask(self.led_binary)
-        if blobs:
-            led = blobs[-1]  # filter features not really necessary
-            self.last_led = led
-            return led
-        else:
-            return None
+            # here: do a lot of things
+            pass
 
-    def preprocess(self, img):
-        """
-        Preprocessing step.
-        """
-        img = img.grayscale()
+    def _find_pupil(self):
+        pass
+
+    def _pre_process(self):
+
+        self.preprocessed = cv2.cvtColor(self.original, code=cv2.COLOR_BGR2GRAY)
         if self.equalize:
-            img = img.equalize()
-        return img
+            self.preprocessed = cv2.equalizeHist(self.preprocessed)
 
-    def get_led_pos(self):
-        return get_abs_position(self.last_led.centroid(), self.led_roi)
+    def process_frame(self, img):
 
-    def get_pupil_pos(self):
-        return get_abs_position(self.last_pupil.centroid(), self.pupil_roi)
-
-    def set_pupil_roi(self, x0, y0, x1, y1):
-        self.pupil_roi = (x0, y0, x1, y1)
-
-    def set_led_roi(self, x0, y0, x1, y1):
-        self.led_roi = (x0, y0, x1, y1)
+        self.original = img
+        self._pre_process()
+        self._find_led()
+        self._find_pupil()
 
 
-def main():
-    pass
 
 
-if __name__ == "__main__":
-    main()
+
