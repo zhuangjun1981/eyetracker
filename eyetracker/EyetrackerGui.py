@@ -19,7 +19,7 @@ CLI counterpart is "eyetracker.py"
 import sys
 import os
 import io
-import ConfigParser
+import configparser as ConfigParser
 import time
 from PyQt5 import QtCore, QtGui
 import numpy as np

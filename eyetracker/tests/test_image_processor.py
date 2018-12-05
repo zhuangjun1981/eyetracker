@@ -66,7 +66,9 @@ class TestImageProcessor(unittest.TestCase):
     def test_PupilLedDetector_detect(self):
         img = np.load(os.path.join('test_files', 'test_img.npy'))
         det = ip.PupilLedDetector(led_roi=(200, 300, 280, 400),
-                                  pupil_roi=(100, 350, 200, 500))
+                                  pupil_roi=(100, 350, 200, 500),
+                                  pupil_binary_threshold=240,
+                                  pupil_openclose_iter=10)
         det.load_first_frame(frame=img)
         det.detect()
         det.show_results()

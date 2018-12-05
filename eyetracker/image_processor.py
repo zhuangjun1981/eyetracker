@@ -279,46 +279,25 @@ class PupilLedDetector(object):
         self.original = frame
 
     def _find_led(self):
+
+        # the following imaging processing steps could be simplified
         self.led_region = apply_roi(self.preprocessed, self.led_roi)
         self.led_blurred = cv2.blur(src=self.led_region, ksize=(self.led_blur, self.led_blur))
         _, self.led_thresholded = cv2.threshold(src=self.led_blurred, thresh=self.led_binary_thresh, maxval=255,
                                                 type=cv2.THRESH_BINARY)
         led_openclose_ker = np.ones((self.led_openclose_iter, self.led_openclose_iter), dtype=np.uint8)
-        self.led_openclosed= cv2.morphologyEx(self.led_thresholded, cv2.MORPH_OPEN, kernel=led_openclose_ker)
-        self.led_openclosed = cv2.morphologyEx(self.led_openclosed, cv2.MORPH_CLOSE, kernel=led_openclose_ker)
+        self.led_openclosed = cv2.morphologyEx(src=self.led_thresholded, op=cv2.MORPH_OPEN, kernel=led_openclose_ker)
+        self.led_openclosed = cv2.morphologyEx(src=self.led_openclosed, op=cv2.MORPH_CLOSE, kernel=led_openclose_ker)
         _, led_cons, _ = cv2.findContours(image=self.led_openclosed,
-                                          mode=cv2.RETR_TREE,
-                                          method=cv2.CHAIN_APPROX_SIMPLE)
+                                          mode=cv2.RETR_TREE, method=cv2.CHAIN_APPROX_SIMPLE)
         print('number of led contours: {}'.format(len(led_cons)))
 
         self.led_contoured = cv2.drawContours(image=cv2.cvtColor(src=self.led_openclosed, code=cv2.COLOR_GRAY2BGR),
                                               contours=led_cons, contourIdx=-1, color=(255, 0, 0), thickness=2)
 
-        # print('\n'.join([str(con) for con in led_cons]))
 
-        # for debug ...
-        # led_ell_cv2 = cv2.fitEllipse(led_cons[0])
-        # led_ell = Ellipse.from_cv2_box(led_ell_cv2)
-        # led_rec = cv2.minAreaRect(led_cons[0])
-        # print('led ellipse: {}'.format(led_ell))
-        # print('led rectangle: {}'.format(led_rec))
-        #
-        # f = plt.figure()
-        # ax = f.add_subplot(111)
-        # img = cv2.cvtColor(self.led_openclosed, cv2.COLOR_GRAY2BGR)
-        # img = led_ell.draw(img=img, color=(0, 255, 0), thickness=1)
-        #
-        # cv2.ellipse(img=img, box=led_ell_cv2, color=(255, 0, 0), thickness=1)
-        #
-        # rec = cv2.boxPoints(led_rec)
-        # rec = np.intp(rec)  # np.intp: Integer used for indexing (same as C ssize_t; normally either int32 or int64)
-        # cv2.drawContours(img, [rec], 0, color=(0, 0, 255), thickness=1)
-        #
-        # ax.imshow(img)
-        # plt.show()
-
-
-        led = Ellipse.from_cv2_box(cv2.fitEllipse(led_cons[0]))
+        led_con = self._pick_led_contour(led_cons)
+        led = Ellipse.from_cv2_box(cv2.fitEllipse(led_con))
         led_area = led.get_area()
 
         if led_area < self.led_min_size or led_area > self.led_max_size:
@@ -327,15 +306,79 @@ class PupilLedDetector(object):
         else:
             # here: do a lot of things
             self.led = led.outof_roi(self.led_roi)
-            # print(self.led.center)
-            # print(self.original.shape)
             self.annotated = np.array(self.original)
             self.led.draw(img=self.annotated, color=(255, 0, 0), thickness=2)
             return True
 
     def _find_pupil(self):
-        self.pupil = None
-        pass
+
+        self.pupil_region = apply_roi(self.preprocessed, self.pupil_roi)
+        self.pupil_blurred = cv2.blur(src=self.pupil_region, ksize=(self.pupil_blur, self.pupil_blur))
+        self.pupil_blurred = 255 - self.pupil_blurred
+        _, self.pupil_thresholded = cv2.threshold(src=self.pupil_blurred, thresh=self.pupil_binary_thresh,
+                                                  maxval=255, type=cv2.THRESH_BINARY)
+        pupil_openclose_ker = np.ones((self.pupil_openclose_iter, self.pupil_openclose_iter), dtype=np.uint8)
+        self.pupil_openclosed = cv2.morphologyEx(src=self.pupil_thresholded, op=cv2.MORPH_OPEN,
+                                                 kernel=pupil_openclose_ker)
+        self.pupil_openclosed = cv2.morphologyEx(src=self.pupil_openclosed, op=cv2.MORPH_CLOSE,
+                                                 kernel=pupil_openclose_ker)
+        _, pupil_cons, _ = cv2.findContours(image=self.pupil_openclosed, mode=cv2.RETR_TREE,
+                                            method=cv2.CHAIN_APPROX_SIMPLE)
+
+        if len(pupil_cons) == 0:
+            return False
+
+        self.pupil_contoured = cv2.drawContours(image=cv2.cvtColor(src=self.pupil_openclosed, code=cv2.COLOR_GRAY2BGR),
+                                                contours=pupil_cons, contourIdx=-1, color=(0, 255, 0), thickness=1)
+
+        if self.led is not None:
+            led_mask = self.led.into_roi(self.pupil_roi).get_binary_mask(self.preprocessed.shape)
+            led_mask_kern = np.ones((self.led_mask_dilation, self.led_mask_dilation), dtype=np.uint8)
+            led_mask = cv2.dilate(src=led_mask, kernel=led_mask_kern, iterations=1)
+
+        pupil_cons = self._mask_led(pupil_cons)
+        pupil_con = self._pick_pupil_contour(pupil_cons)
+        pupil = Ellipse.from_cv2_box(cv2.fitEllipse(pupil_con))
+        self.pupil = pupil.outof_roi(self.pupil_roi)
+        self.pupil.draw(img=self.annotated, color=(0, 255, 0), thickness=1)
+
+        return True
+
+    def _pick_led_contour(self, cons):
+        """
+        for each detected potential led contour, pick the roundest one
+
+        :param cons: detected led contours
+        :return:
+        """
+
+        # todo: rank contours by roundness and pick the roundest one
+
+        return cons[0]
+
+    def _mask_led(self, cons):
+        """
+        for each detected potential pupil contour, mask out the shape of led
+
+        :param cons: detected pupil contours
+        """
+        if self.led is None:
+            return cons
+        else:
+            # todo: as the name of the method says, MASK LED!!
+            return cons
+
+    def _pick_pupil_contour(self, cons):
+        """
+        for each detected potential pupil contour after LED masking, pick the
+        roundest one and the one closest to the pupil from last frame
+
+        :param cons: detected pupil contours
+        """
+
+        #todo: rank contours by roundness and approximity to the last pupil position, and pick the best one
+
+        return cons[0]
 
     def _pre_process(self):
 
@@ -407,6 +450,30 @@ class PupilLedDetector(object):
             ax8.imshow(self.led_contoured)
         ax8.set_axis_off()
         ax8.set_title('led contoured')
+
+        ax9 = f.add_subplot(3, 4, 9)
+        if self.pupil_blurred is not None:
+            ax9.imshow(self.pupil_blurred, vmin=0, vmax=255, cmap='gray')
+        ax9.set_axis_off()
+        ax9.set_title('pupil blurred')
+
+        ax10 = f.add_subplot(3, 4, 10)
+        if self.pupil_thresholded is not None:
+            ax10.imshow(self.pupil_thresholded, vmin=0, vmax=255, cmap='gray')
+        ax10.set_axis_off()
+        ax10.set_title('pupil thresholded')
+
+        ax11 = f.add_subplot(3, 4, 11)
+        if self.pupil_openclosed is not None:
+            ax11.imshow(self.pupil_openclosed, vmin=0, vmax=255, cmap='gray')
+        ax11.set_axis_off()
+        ax11.set_title('pupil openclosed')
+
+        ax12 = f.add_subplot(3, 4, 12)
+        if self.pupil_contoured is not None:
+            ax12.imshow(self.pupil_contoured)
+        ax12.set_axis_off()
+        ax12.set_title('pupil contoured')
 
 
 
