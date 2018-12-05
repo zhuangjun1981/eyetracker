@@ -11,6 +11,68 @@ class TestImageProcessor(unittest.TestCase):
         curr_folder = os.path.dirname(os.path.realpath(__file__))
         os.chdir(curr_folder)
 
+    def test_Ellipse(self):
+        ell = ip.Ellipse(center=(64.3, 192.2), axes=(22.6, 5.7), angle=45.0)
+        mask = ell.get_binary_mask((256, 256))
+
+        assert(mask[64, 192] == 1)
+        assert(mask[64, 212] == 0)
+        assert(mask[44, 192] == 0)
+        assert(mask[78, 178] == 1)
+        assert(mask[50, 206] == 1)
+
+        img = cv2.cvtColor(src=mask*255, code=cv2.COLOR_GRAY2BGR)
+        img_marked = ell.draw(img=img, color=(0, 255, 0), thickness=1)
+        import matplotlib.pyplot as plt
+        plt.imshow(img_marked)
+        plt.colorbar()
+        plt.show()
+
+    def test_Ellipse_get_intensity(self):
+        img = np.ones((256, 256))
+        ell = ip.Ellipse(center=(120.5, 70.8), axes=(22.6, 5.7), angle=25.5)
+        int = ell.get_intensity(img)
+        assert(int == 1)
+
+    def test_Ellipse_roi(self):
+        ell = ip.Ellipse(center=(64.3, 192.2), axes=(22.6, 5.7), angle=45.0)
+        mask = ell.get_binary_mask((256, 256))
+
+        roi = [0, 128, 128, 256]
+        ell_roi = ell.into_roi(roi)
+        mask_roi = ell_roi.get_binary_mask((128, 128))
+
+        assert (mask_roi[64, 64] == 1)
+        assert (mask_roi[64, 84] == 0)
+        assert (mask_roi[44, 64] == 0)
+        assert (mask_roi[78, 50] == 1)
+        assert (mask_roi[50, 78] == 1)
+
+        import matplotlib.pyplot as plt
+        f = plt.figure(figsize=(8, 4))
+        ax1 = f.add_subplot(1, 2, 1)
+        img_marked = ell.draw(img=cv2.cvtColor(mask * 255, cv2.COLOR_GRAY2BGR), color=(0, 255, 0), thickness=2)
+        cv2.rectangle(img_marked, pt1=(roi[2], roi[0]), pt2=(roi[3], roi[1]), color=(255, 0, 0), thickness=2)
+        ax1.imshow(img_marked)
+        ax1.set_title('full')
+
+        ax2 = f.add_subplot(1, 2, 2)
+        img_marked_roi = ell_roi.draw(img=cv2.cvtColor(mask_roi * 255, cv2.COLOR_GRAY2BGR),
+                                      color=(0, 255, 0), thickness=2)
+        ax2.imshow(img_marked_roi)
+        ax2.set_title('roi')
+        plt.show()
+
+    def test_PupilLedDetector_detect(self):
+        img = np.load(os.path.join('test_files', 'test_img.npy'))
+        det = ip.PupilLedDetector(led_roi=(200, 300, 280, 400),
+                                  pupil_roi=(100, 350, 200, 500))
+        det.load_first_frame(frame=img)
+        det.detect()
+        det.show_results()
+        import matplotlib.pyplot as plt
+        plt.show()
+
     def test_temp(self):
 
         mov_path = os.path.join('test_files', 'test.avi')
@@ -47,31 +109,3 @@ class TestImageProcessor(unittest.TestCase):
         cv2.waitKey(0)
 
         cv2.destroyAllWindows()
-
-    def test_temp2(self):
-        img = np.load(os.path.join('test_files', 'test_img.npy'))
-        det = ip.PupilLedDetector(led_roi=(200, 300, 280, 400),
-                                  pupil_roi=(100, 350, 200, 500))
-        det.load_first_frame(frame=img)
-        det.detect()
-        det.show_results()
-        import matplotlib.pyplot as plt
-        plt.show()
-
-    def test_Ellipse_get_binary_mask(self):
-        import matplotlib.pyplot as plt
-        ell = ip.Ellipse(center=(120.5, 70.8), axes=(22.6, 5.7), angle=25.5)
-        mask = ell.get_binary_mask((256, 256)) * 255
-        img = cv2.cvtColor(src=mask, code=cv2.COLOR_GRAY2BGR)
-        ell_cv2 = ell.get_cv2_ellips()
-        cv2.ellipse(img=img, center=ell_cv2[0], axes=ell_cv2[1], angle=ell_cv2[2], startAngle=ell_cv2[3],
-                    endAngle=ell_cv2[4], color=(0, 255, 0), thickness=1)
-        plt.imshow(img)
-        plt.colorbar()
-        plt.show()
-
-    def test_Ellipse_get_intensity(self):
-        img = np.ones((256, 256))
-        ell = ip.Ellipse(center=(120.5, 70.8), axes=(22.6, 5.7), angle=25.5)
-        int = ell.get_intensity(img)
-        assert(int == 1)

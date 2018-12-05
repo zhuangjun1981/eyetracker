@@ -22,7 +22,7 @@ def apply_roi(img, roi):
 def get_abs_position(pos, roi):
     """ Converts an ROI position to the position within the full img. """
     if roi:
-        return int(pos[0]+roi[0]), int(pos[1]+roi[1])
+        return int(pos[0]+roi[0]), int(pos[1]+roi[2])
     else:
         return pos
 
@@ -30,7 +30,7 @@ def get_abs_position(pos, roi):
 def get_relative_position(pos, roi):
     """ Converts an image position to a position within an ROI. """
     if roi:
-        return int(pos[0]-roi[0]), int(pos[1]-roi[1])
+        return int(pos[0]-roi[0]), int(pos[1]-roi[2])
     else:
         return pos
 
@@ -49,11 +49,19 @@ class Ellipse(object):
 
         :param center: tuple of two positive floats, (center height, center width)
         :param axes: tuple of two positive floats, (length of first axis, length of second axis)
-        :param angle: float, degree, clockwise rotation of first axis
+        :param angle: float, degree, counterclockwise rotation of first axis, from right direction
         """
         self.center = center
         self.axes = axes
         self.angle = angle
+
+    def get_cv2_ellips(self):
+        """
+        :return: the ellipse in opencv3 format for drawing
+        """
+        return ((int(round(self.center[1])), int(round(self.center[0]))),
+                (int(round(self.axes[0])), int(round(self.axes[1]))),
+                -self.angle, 0, 360)
 
     def get_area(self):
         return np.pi * self.axes[0] * self.axes[1]
@@ -64,15 +72,10 @@ class Ellipse(object):
         :return: binary mask of the ellipse with given shape
         """
         mask = np.zeros(shape=shape, dtype=np.uint8)
-        mask = cv2.ellipse(mask,
-                           center=(int(self.center[0]), int(self.center[1])),
-                           axes=(int(self.axes[0]), int(self.axes[1])),
-                           angle=self.angle,
-                           startAngle=0,
-                           endAngle=360,
-                           color=1,
-                           thickness=-1)
-        return mask
+        ell_cv2 = self.get_cv2_ellips()
+        mask = cv2.ellipse(mask, center=ell_cv2[0], axes=ell_cv2[1], angle=ell_cv2[2], startAngle=0, endAngle=360,
+                           color=1, thickness=-1)
+        return mask.astype(np.uint8)
 
     def get_intensity(self, img):
         """
@@ -102,8 +105,23 @@ class Ellipse(object):
                        axes=self.axes,
                        angle=self.angle)
 
-    def get_cv2_ellips(self):
-        return ((int(self.center[0]), int(self.center[1])), (int(self.axes[0]), int(self.axes[1])), self.angle, 0, 360)
+    def draw(self, img, color=(0, 255, 0), thickness=3):
+
+        ell_cv2 = self.get_cv2_ellips()
+
+        img_marked = cv2.ellipse(img=img, center=ell_cv2[0], axes=ell_cv2[1], angle=ell_cv2[2], startAngle=ell_cv2[3],
+                     endAngle=ell_cv2[4], color=color, thickness=thickness)
+        return img_marked
+
+    @staticmethod
+    def from_cv2_box(box):
+        """
+        get Ellipse object from cv2 rotated rectangle object (from cv2.fitEllipse() function)
+        """
+        center = (int(round(box[0][1])), int(round(box[0][0])))
+        axes = (int(round(box[1][0] / 2)), int(round(box[1][1] / 2)))
+        angle = -box[2]
+        return Ellipse(center=center, axes=axes, angle=angle)
 
 
 class PupilLedDetector(object):
@@ -277,23 +295,42 @@ class PupilLedDetector(object):
                                               contours=led_cons, contourIdx=-1, color=(255, 0, 0), thickness=2)
 
         # print('\n'.join([str(con) for con in led_cons]))
-        led_ell = cv2.fitEllipse(led_cons[0])
-        # opencv fitEllipse give the center as (x, y) needs to be swapped to (height, width)
-        led_center = get_abs_position((led_ell[0][1], led_ell[0][0]), self.led_roi)
 
-        led = Ellipse(center=led_center, axes=led_ell[1], angle=led_ell[2])
+        # for debug ...
+        # led_ell_cv2 = cv2.fitEllipse(led_cons[0])
+        # led_ell = Ellipse.from_cv2_box(led_ell_cv2)
+        # led_rec = cv2.minAreaRect(led_cons[0])
+        # print('led ellipse: {}'.format(led_ell))
+        # print('led rectangle: {}'.format(led_rec))
+        #
+        # f = plt.figure()
+        # ax = f.add_subplot(111)
+        # img = cv2.cvtColor(self.led_openclosed, cv2.COLOR_GRAY2BGR)
+        # img = led_ell.draw(img=img, color=(0, 255, 0), thickness=1)
+        #
+        # cv2.ellipse(img=img, box=led_ell_cv2, color=(255, 0, 0), thickness=1)
+        #
+        # rec = cv2.boxPoints(led_rec)
+        # rec = np.intp(rec)  # np.intp: Integer used for indexing (same as C ssize_t; normally either int32 or int64)
+        # cv2.drawContours(img, [rec], 0, color=(0, 0, 255), thickness=1)
+        #
+        # ax.imshow(img)
+        # plt.show()
 
-        if led.get_area() < self.led_min_size or led.get_area() > self.led_max_size:
+
+        led = Ellipse.from_cv2_box(cv2.fitEllipse(led_cons[0]))
+        led_area = led.get_area()
+
+        if led_area < self.led_min_size or led_area > self.led_max_size:
             self.led = None
             return False
         else:
             # here: do a lot of things
             self.led = led.outof_roi(self.led_roi)
-            print(self.led.center)
+            # print(self.led.center)
+            # print(self.original.shape)
             self.annotated = np.array(self.original)
-            cv2.ellipse(img=self.annotated, center=(int(self.led.center[0]), int(self.led.center[1])),
-                        axes=(int(self.led.axes[0]), int(self.led.axes[1])), angle=self.led.angle, startAngle=0,
-                        endAngle=360, color=(255, 255, 0), thickness=2)
+            self.led.draw(img=self.annotated, color=(255, 0, 0), thickness=2)
             return True
 
     def _find_pupil(self):
