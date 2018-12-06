@@ -7,6 +7,20 @@ import cv2
 import matplotlib.pyplot as plt
 
 
+DEFAULT_PARA = {'pupil_is_equalize':True,
+                'led_roi':None,
+                'pupil_roi':None,
+                'led_binary_threshold':230,
+                'pupil_binary_threshold':210,
+                'led_blur':2,
+                'pupil_blur':2,
+                'led_openclose_iter':1,
+                'pupil_openclose_iter':4,
+                'led_min_size':1,
+                'pupil_min_size':200,
+                'led_max_size':1000,
+                'led_mask_dilation':5}
+
 def apply_roi(img, roi):
     """
     :param img: 2d array
@@ -145,19 +159,19 @@ class Ellipse(object):
 class PupilLedDetector(object):
 
     def __init__(self,
-                 pupil_is_equalize=True,
-                 led_roi=None,
-                 pupil_roi=None,
-                 led_binary_threshold=230,
-                 pupil_binary_threshold=210,
-                 led_blur=2,
-                 pupil_blur=2,
-                 led_openclose_iter=1,
-                 pupil_openclose_iter=4,
-                 led_min_size=1,
-                 pupil_min_size=200,
-                 led_max_size=1000,
-                 led_mask_dilation=5,
+                 pupil_is_equalize=DEFAULT_PARA['pupil_is_equalize'],
+                 led_roi=DEFAULT_PARA['led_roi'],
+                 pupil_roi=DEFAULT_PARA['pupil_roi'],
+                 led_binary_threshold=DEFAULT_PARA['led_binary_threshold'],
+                 pupil_binary_threshold=DEFAULT_PARA['pupil_binary_threshold'],
+                 led_blur=DEFAULT_PARA['led_blur'],
+                 pupil_blur=DEFAULT_PARA['pupil_blur'],
+                 led_openclose_iter=DEFAULT_PARA['led_openclose_iter'],
+                 pupil_openclose_iter=DEFAULT_PARA['pupil_openclose_iter'],
+                 led_min_size=DEFAULT_PARA['led_min_size'],
+                 pupil_min_size=DEFAULT_PARA['pupil_min_size'],
+                 led_max_size=DEFAULT_PARA['led_max_size'],
+                 led_mask_dilation=DEFAULT_PARA['led_mask_dilation'],
                  ):
 
         # # some stuff we want to track between frames
@@ -557,6 +571,24 @@ class PupilLedDetector(object):
             ax12.imshow(self.pupil_contoured)
         ax12.set_axis_off()
         ax12.set_title('pupil contoured')
+
+    def get_parameter_dict(self):
+
+        para_dict = {'pupil_is_equalize': self.pupil_is_equalize,
+                     'led_roi': self.led_roi,
+                     'pupil_roi': self.pupil_roi,
+                     'led_binary_threshold': self.led_binary_thresh,
+                     'pupil_binary_threshold': self.pupil_binary_thresh,
+                     'led_blur': self.led_blur,
+                     'pupil_blur': self.pupil_blur,
+                     'led_openclose_iter': self.led_openclose_iter,
+                     'pupil_openclose_iter':self.pupil_openclose_iter,
+                     'led_min_size': self.led_min_size,
+                     'pupil_min_size': self.pupil_min_size,
+                     'led_max_size': self.led_max_size,
+                     'led_mask_dilation': self.led_mask_dilation}
+
+        return para_dict
 
 
 
