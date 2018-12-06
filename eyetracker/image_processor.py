@@ -41,6 +41,37 @@ def dist2d(p1, p2):
                    (p2[1] - p1[1]) ** 2)
 
 
+def get_perimeter(contour):
+    """
+    given a contour detected by cv2.findContours, return the circular index of this contour
+
+    :param contour: np.array of list of (x, y) points from a contour.
+
+    :return: float, perimeter of the contour
+    """
+
+    con_pre = contour
+    con_post = np.concatenate((contour[1:], contour[0:1]))
+
+    return np.sum(np.sqrt(np.sum(np.square(con_pre - con_post), axis=1)))
+
+
+def get_circularity(contour):
+    """
+    given a contour detected by cv2.findContours, return the circular index of this contour
+
+    circular index = 4 * pi * area / (perimeter ** 2)
+
+    :param contour: list of (x, y) points from a contour.
+
+    :return: float, circular index (0: not circle at all, line, 1: perfect circle)
+    """
+
+    area = cv2.contourArea(contour)
+    peri = get_perimeter(contour)
+    return 4 * np.pi / (peri ** 2)
+
+
 class Ellipse(object):
 
     def __init__(self, center, axes, angle):
@@ -119,7 +150,7 @@ class Ellipse(object):
         get Ellipse object from cv2 rotated rectangle object (from cv2.fitEllipse() function)
         """
         center = (int(round(box[0][1])), int(round(box[0][0])))
-        axes = (int(round(box[1][0] / 2)), int(round(box[1][1] / 2)))
+        axes = (int(round(box[1][0] / 2.)), int(round(box[1][1] / 2.)))
         angle = -box[2]
         return Ellipse(center=center, axes=axes, angle=angle)
 
@@ -296,19 +327,30 @@ class PupilLedDetector(object):
                                               contours=led_cons, contourIdx=-1, color=(255, 0, 0), thickness=2)
 
 
-        led_con = self._pick_led_contour(led_cons)
-        led = Ellipse.from_cv2_box(cv2.fitEllipse(led_con))
-        led_area = led.get_area()
-
-        if led_area < self.led_min_size or led_area > self.led_max_size:
+        if len(led_cons) == None:
             self.led = None
             return False
+
         else:
-            # here: do a lot of things
-            self.led = led.outof_roi(self.led_roi)
-            self.annotated = np.array(self.original)
-            self.led.draw(img=self.annotated, color=(255, 0, 0), thickness=2)
-            return True
+
+            led_con = self._filter_led_contour(led_cons)
+
+            if led_con is not None:
+                led = Ellipse.from_cv2_box(cv2.fitEllipse(led_con))
+                led_area = led.get_area()
+
+                if led_area < self.led_min_size or led_area > self.led_max_size: # picked LED does not meet size criteria
+                    self.led = None
+                    return False
+                else:
+                    # here: do a lot of things
+                    self.led = led.outof_roi(self.led_roi)
+                    self.annotated = np.array(self.original)
+                    self.led.draw(img=self.annotated, color=(255, 0, 0), thickness=2)
+                    return True
+            else:  # no LED contour after filtering
+                self.led = None
+                return False
 
     def _find_pupil(self):
 
@@ -331,30 +373,32 @@ class PupilLedDetector(object):
         self.pupil_contoured = cv2.drawContours(image=cv2.cvtColor(src=self.pupil_openclosed, code=cv2.COLOR_GRAY2BGR),
                                                 contours=pupil_cons, contourIdx=-1, color=(0, 255, 0), thickness=1)
 
-        if self.led is not None:
-            led_mask = self.led.into_roi(self.pupil_roi).get_binary_mask(self.preprocessed.shape)
-            led_mask_kern = np.ones((self.led_mask_dilation, self.led_mask_dilation), dtype=np.uint8)
-            led_mask = cv2.dilate(src=led_mask, kernel=led_mask_kern, iterations=1)
-
         pupil_cons = self._mask_led(pupil_cons)
-        pupil_con = self._pick_pupil_contour(pupil_cons)
+        pupil_con = self._filter_pupil_contour(pupil_cons)
         pupil = Ellipse.from_cv2_box(cv2.fitEllipse(pupil_con))
         self.pupil = pupil.outof_roi(self.pupil_roi)
         self.pupil.draw(img=self.annotated, color=(0, 255, 0), thickness=1)
 
         return True
 
-    def _pick_led_contour(self, cons):
+    def _filter_led_contour(self, cons):
         """
-        for each detected potential led contour, pick the roundest one
+        for each detected potential led contour, first pick contours with at least 5 points,
+         then pick the roundest one
 
         :param cons: detected led contours
         :return:
         """
 
-        # todo: rank contours by roundness and pick the roundest one
+        cons_filtered = np.array([con for con in cons if con.shape[0] >= 5])
 
-        return cons[0]
+        if len(cons_filtered) == 0:
+            return None
+        elif len(cons_filtered) == 1:
+            return cons_filtered[0]
+        else:
+            circularities = [get_circularity(con) for con in cons_filtered]
+            return cons_filtered[np.argmax(circularities)]
 
     def _mask_led(self, cons):
         """
@@ -365,10 +409,15 @@ class PupilLedDetector(object):
         if self.led is None:
             return cons
         else:
+
+            led_mask = self.led.into_roi(self.pupil_roi).get_binary_mask(self.preprocessed.shape)
+            led_mask_kern = np.ones((self.led_mask_dilation, self.led_mask_dilation), dtype=np.uint8)
+            led_mask = cv2.dilate(src=led_mask, kernel=led_mask_kern, iterations=1)
+
             # todo: as the name of the method says, MASK LED!!
             return cons
 
-    def _pick_pupil_contour(self, cons):
+    def _filter_pupil_contour(self, cons):
         """
         for each detected potential pupil contour after LED masking, pick the
         roundest one and the one closest to the pupil from last frame

@@ -11,6 +11,12 @@ class TestImageProcessor(unittest.TestCase):
         curr_folder = os.path.dirname(os.path.realpath(__file__))
         os.chdir(curr_folder)
 
+    def test_get_perimeter(self):
+        aa = np.array([[1, 1], [1, 2], [2, 2], [2, 1]])
+        assert(ip.get_perimeter(aa) == 4.)
+        bb = np.array([[1, 1], [1, 3], [2, 3], [2, 1]])
+        assert(ip.get_perimeter(bb) == 6.)
+
     def test_Ellipse(self):
         ell = ip.Ellipse(center=(64.3, 192.2), axes=(22.6, 5.7), angle=45.0)
         mask = ell.get_binary_mask((256, 256))
@@ -67,6 +73,7 @@ class TestImageProcessor(unittest.TestCase):
         img = np.load(os.path.join('test_files', 'test_img.npy'))
         det = ip.PupilLedDetector(led_roi=(200, 300, 280, 400),
                                   pupil_roi=(100, 350, 200, 500),
+                                  led_binary_threshold=200,
                                   pupil_binary_threshold=240,
                                   pupil_openclose_iter=10)
         det.load_first_frame(frame=img)
