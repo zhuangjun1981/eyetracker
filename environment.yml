@@ -9,7 +9,5 @@ dependencies:
   - qtpy
   - h5py
   - pyqtgraph
-  - configparser
+  - pyyaml
   - matplotlib # this may not be required
-  - pip:
-    - configparser

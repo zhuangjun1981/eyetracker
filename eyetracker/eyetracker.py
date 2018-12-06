@@ -18,7 +18,7 @@ class Eyetracker(object):
     """
     Eyetracking program designed for CLI use.
 
-    Main function is to process a single video and create 1) parameters used as a config file;
+    Main function is to process a single video and create 1) parameters used as a .yml config file;
     2) annotated .avi movie and 3) an .hdf5 file containing the following:
 
         1) The pupil/led positions for each frame
@@ -28,25 +28,23 @@ class Eyetracker(object):
         5) a copy of config
         6) Metadata about the movie file.  Size, length, etc.
 
+    all three files should have same file name and live in the same folder as input movie file.
+
     Parameters
     ----------
-    video_file : str
+    input_movie_path : str
         Path to input video
-    output_file : str
-        Path for output video
-    config_file : str
-        Path for config file. Default: None
     """
 
     def __init__(self,
-                 input_file_path=None,
+                 input_movie_path=None,
                  ):
 
-        if input_file_path is None:
-            self.input_file_path = input_file_path
-        elif input_file_path[-4:] == '.avi':
-            self.input_file_path = os.path.realpath(input_file_path)
-            self.load_file(self.input_file_path)
+        if input_movie_path is None:
+            self.input_movie_path = input_movie_path
+        elif input_movie_path[-4:] == '.avi':
+            self.input_movie_path = os.path.realpath(input_movie_path)
+            self.load_file()
         else:
             raise LookupError('input file should be a .avi movie file.')
 
@@ -55,27 +53,35 @@ class Eyetracker(object):
         if os.path.isfile(self._data_file_path):
             raise FileExistsError('the .hdf5 data file already exists. Path:\n\t{}'.format(self._data_file_path))
 
+        self.load_cfg()
+
+    def load_cfg(self):
+
         if os.path.isfile(self._cfg_file_path):
             print('load existing config file.')
         else:
             print('did not find config file. load default config.')
-        self.load_cfg()
-
-    def load_cfg(self):
 
         #todo: finish this
         pass
 
     @property
     def _data_file_path(self):
-        if self.input_file_path is not None:
-            return os.path.splitext(self.input_file_path) + '.hdf5'
+        if self.input_movie_path is not None:
+            return os.path.splitext(self.input_movie_path)[0] + '_output.hdf5'
         else:
             return None
 
     @property
     def _cfg_file_path(self):
-        if self.input_file_path is not None:
-            return os.path.splitext(self.input_file_path) + '.cfg'
+        if self.input_movie_path is not None:
+            return os.path.splitext(self.input_movie_path)[0] + '_output.yml'
+        else:
+            return None
+
+    @property
+    def _output_movie_path(self):
+        if self.input_movie_path is not None:
+            return os.path.splitext(self.input_movie_path)[0] + '_output.avi'
         else:
             return None
