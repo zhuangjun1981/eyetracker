@@ -11,12 +11,6 @@ class TestImageProcessor(unittest.TestCase):
         curr_folder = os.path.dirname(os.path.realpath(__file__))
         os.chdir(curr_folder)
 
-    def test_get_perimeter(self):
-        aa = np.array([[1, 1], [1, 2], [2, 2], [2, 1]])
-        assert(ip.get_perimeter(aa) == 4.)
-        bb = np.array([[1, 1], [1, 3], [2, 3], [2, 1]])
-        assert(ip.get_perimeter(bb) == 6.)
-
     def test_Ellipse(self):
         ell = ip.Ellipse(center=(64.3, 192.2), axes=(22.6, 5.7), angle=45.0)
         mask = ell.get_binary_mask((256, 256))
@@ -74,8 +68,26 @@ class TestImageProcessor(unittest.TestCase):
         det = ip.PupilLedDetector(led_roi=(200, 300, 280, 400),
                                   pupil_roi=(100, 350, 200, 500),
                                   led_binary_threshold=200,
+                                  led_openclose_iter=1,
                                   pupil_binary_threshold=240,
-                                  pupil_openclose_iter=10)
+                                  pupil_openclose_iter=10,
+                                  pupil_min_size=500)
+        det.load_first_frame(frame=img)
+        det.detect()
+        det.show_results()
+        import matplotlib.pyplot as plt
+        plt.show()
+
+    def test_PupilLedDetector_detect2(self):
+        img = np.load(os.path.join('test_files', 'test_img2.npy'))
+        det = ip.PupilLedDetector(led_roi=(80, 140, 130, 200),
+                                  # pupil_roi=(0, 240, 0, 320),
+                                  led_binary_threshold=250,
+                                  led_openclose_iter=1,
+                                  pupil_binary_threshold=200,
+                                  pupil_openclose_iter=10,
+                                  pupil_min_size=500,
+                                  led_mask_dilation=15)
         det.load_first_frame(frame=img)
         det.detect()
         det.show_results()
@@ -104,12 +116,12 @@ class TestImageProcessor(unittest.TestCase):
 
         # edges = cv2.Canny(image=img_g, threshold1=1000, threshold2=5000, apertureSize=5)
         # img2, contours, hierarchy = cv2.findContours(image=edges, mode=cv2.RETR_TREE, method=cv2.CHAIN_APPROX_SIMPLE)
-        print(len(contours))
+        # print(len(contours))
 
         # cv2.drawContours(image=img, contours=contours, contourIdx=-1, color=(0, 255, 0), thickness=3)
 
         ellipse = cv2.fitEllipse(contours[0])
-        print(ellipse)
+        # print(ellipse)
         cv2.ellipse(img, ellipse, (0, 255, 0), 3)
 
 
