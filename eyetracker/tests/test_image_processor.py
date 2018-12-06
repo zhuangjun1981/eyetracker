@@ -85,9 +85,10 @@ class TestImageProcessor(unittest.TestCase):
                                   led_binary_threshold=250,
                                   led_openclose_iter=1,
                                   pupil_binary_threshold=200,
-                                  pupil_openclose_iter=10,
+                                  pupil_openclose_iter=5,
                                   pupil_min_size=500,
-                                  led_mask_dilation=15)
+                                  led_mask_dilation=20,
+                                  pupil_is_equalize=False)
         det.load_first_frame(frame=img)
         det.detect()
         det.show_results()

@@ -145,7 +145,7 @@ class Ellipse(object):
 class PupilLedDetector(object):
 
     def __init__(self,
-                 is_equalize=True,
+                 pupil_is_equalize=True,
                  led_roi=None,
                  pupil_roi=None,
                  led_binary_threshold=230,
@@ -191,7 +191,7 @@ class PupilLedDetector(object):
         # some stuff we want to allow the user to tweak
 
         # preprocessing
-        # self.is_equalize = is_equalize
+        # self.pupil_is_equalize = pupil_is_equalize
         #
         # # pupil
         # self.pupil_roi = pupil_roi
@@ -209,7 +209,7 @@ class PupilLedDetector(object):
         # self.led_max_size = led_max_size
         # self.led_mask_dilation = led_mask_dilation
 
-        self.load_parameters(is_equalize=is_equalize, led_roi=led_roi, pupil_roi=pupil_roi,
+        self.load_parameters(pupil_is_equalize=pupil_is_equalize, led_roi=led_roi, pupil_roi=pupil_roi,
                              led_binary_threshold=led_binary_threshold,
                              pupil_binary_threshold=pupil_binary_threshold, led_blur=led_blur,
                              pupil_blur=pupil_blur, led_openclose_iter=led_openclose_iter,
@@ -258,11 +258,11 @@ class PupilLedDetector(object):
         self.last_led = None  # ellipse object
         # self.last_pupil_velocity = (0, 0) # not used
 
-    def load_parameters(self, is_equalize, led_roi, pupil_roi, led_binary_threshold, pupil_binary_threshold, led_blur,
+    def load_parameters(self, pupil_is_equalize, led_roi, pupil_roi, led_binary_threshold, pupil_binary_threshold, led_blur,
                         pupil_blur, led_openclose_iter, pupil_openclose_iter, led_min_size, pupil_min_size,
                         led_max_size, led_mask_dilation):
         # preprocessing
-        self.is_equalize = is_equalize
+        self.pupil_is_equalize = pupil_is_equalize
 
         # pupil
         self.pupil_roi = pupil_roi
@@ -326,6 +326,10 @@ class PupilLedDetector(object):
     def _find_pupil(self):
 
         self.pupil_region = apply_roi(self.preprocessed, self.pupil_roi)
+
+        if self.pupil_is_equalize:
+            self.pupil_region = cv2.equalizeHist(src=self.pupil_region)
+
         self.pupil_blurred = cv2.blur(src=self.pupil_region, ksize=(self.pupil_blur, self.pupil_blur))
         self.pupil_blurred = 255 - self.pupil_blurred
         _, self.pupil_thresholded = cv2.threshold(src=self.pupil_blurred, thresh=self.pupil_binary_thresh,
@@ -459,8 +463,8 @@ class PupilLedDetector(object):
     def _pre_process(self):
 
         self.preprocessed = cv2.cvtColor(self.original, code=cv2.COLOR_BGR2GRAY)
-        if self.is_equalize:
-            self.preprocessed = cv2.equalizeHist(self.preprocessed)
+        # if self.pupil_is_equalize:
+        #     self.preprocessed = cv2.equalizeHist(self.preprocessed)
 
     def detect(self):
         self._pre_process()
@@ -494,11 +498,11 @@ class PupilLedDetector(object):
         ax1.set_title('original')
         ax1.set_axis_off()
 
-        ax2 = f.add_subplot(3, 4, 2)
-        if self.preprocessed is not None:
-            ax2.imshow(self.preprocessed, cmap='gray', vmin=0, vmax=255)
-        ax2.set_title('preprocessed')
-        ax2.set_axis_off()
+        # ax2 = f.add_subplot(3, 4, 2)
+        # if self.preprocessed is not None:
+        #     ax2.imshow(self.preprocessed, cmap='gray', vmin=0, vmax=255)
+        # ax2.set_title('preprocessed')
+        # ax2.set_axis_off()
 
         ax4 = f.add_subplot(3, 4, 4)
         if self.annotated is not None:
