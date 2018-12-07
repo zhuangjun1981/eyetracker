@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'video.ui'
+# Form implementation generated from reading ui file 'input_movie.ui'
 #
 # Created: Mon Oct 06 14:40:39 2014
 #      by: PyQt4 UI code generator 4.9.6
@@ -47,7 +47,7 @@ class Ui_Form(object):
         QtCore.QMetaObject.connectSlotsByName(Form)
 
     def retranslateUi(self, Form):
-        Form.setWindowTitle(_translate("Form", "video", None))
+        Form.setWindowTitle(_translate("Form", "input_movie", None))
         self.label_frame_shape.setText(_translate("Form", "image info", None))
         self.label_pixel_value.setText(_translate("Form", "pixel_value", None))
 

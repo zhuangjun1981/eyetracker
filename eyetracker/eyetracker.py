@@ -12,13 +12,18 @@ CLI version of the GUI eyetracker.  Used for batch processing.
 """
 
 import os
+import numpy as np
+import cv2
 from . import image_processor as ip
+
+FOURCC = 'XVID'
+FPS = 30
 
 class Eyetracker(object):
     """
     Eyetracking program designed for CLI use.
 
-    Main function is to process a single video and create 1) parameters used as a .yml config file;
+    Main function is to process a single input_movie and create 1) parameters used as a .yml config file;
     2) annotated .avi movie and 3) an .hdf5 file containing the following:
 
         1) The pupil/led positions for each frame
@@ -33,7 +38,7 @@ class Eyetracker(object):
     Parameters
     ----------
     input_movie_path : str
-        Path to input video
+        Path to input input_movie
     """
 
     def __init__(self,
@@ -54,16 +59,33 @@ class Eyetracker(object):
             raise FileExistsError('the .hdf5 data file already exists. Path:\n\t{}'.format(self._data_file_path))
 
         self.load_cfg()
+        self.input_movie = cv2.VideoCapture(self.input_movie_path)
+        self.frame_num = self.input_movie.get(cv2.CAP_PROP_FRAME_COUNT)
+        self.frame_shape = (self.input_movie.get(cv2.CAP_PROP_FRAME_HEIGHT),
+                            self.input_movie.get(cv2.CAP_PROP_FRAME_WIDTH))
+
+        pupil_positions = np.zeros((self.frame_num), 2)
+        pupil_positions[:] = np.nan
+        pupil_shape = np.zeros((self.frame_num), 3)
+        pupil_shape[:] = np.nan
+        led_positions = np.zeros((self.frame_num), 2)
+        led_positions[:] = np.nan
+        led_shape = np.zeros((self.frame_num), 3)
+        led_shape[:] = np.nan
+
+        self.output_movie = cv2.VideoWriter(filename=self._output_movie_path,
+                                            fourcc=cv2.VideoWriter_fourcc(*FOURCC),
+                                            fps=FPS,
+                                            frameSize=self.frame_shape)
 
     def load_cfg(self):
 
         if os.path.isfile(self._cfg_file_path):
             print('load existing config file.')
+            # todo: finish this
         else:
             print('did not find config file. load default config.')
-
-        #todo: finish this
-        pass
+            self.detector = ip.PupilLedDetector()
 
     @property
     def _data_file_path(self):

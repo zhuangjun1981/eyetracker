@@ -8,8 +8,8 @@ Created on Oct 3, 2014
 
 @author: derricw
 
-Displays a GUI for adjusting video parameters and thresholds for pruning out the LED
-    and pupil on an video stream.
+Displays a GUI for adjusting input_movie parameters and thresholds for pruning out the LED
+    and pupil on an input_movie stream.
 
 Main purpose is to load eyetracking videos and process them.
 
@@ -115,7 +115,7 @@ class EyetrackerGui(QtGui.QMainWindow):
 
         self._setupGraphics()
 
-        #Current video file or camera stream that we are processing
+        #Current input_movie file or camera stream that we are processing
         self.video_file = None
         self.video_path = None
         self.show_positions = True
@@ -216,7 +216,7 @@ class EyetrackerGui(QtGui.QMainWindow):
     def _apply_config(self, config):
         """
         Applies a configuration set.  Adjusts both current image processor
-            instance and GUI's video display ROI
+            instance and GUI's input_movie display ROI
 
         Parameters
         ----------
@@ -260,8 +260,8 @@ class EyetrackerGui(QtGui.QMainWindow):
         """
         GUI update callback.
 
-        If there is a video being displayed, we process the next frame,
-            update labels, update plots, update video display.
+        If there is a input_movie being displayed, we process the next frame,
+            update labels, update plots, update input_movie display.
 
         """
         if self.video_file:
@@ -284,7 +284,7 @@ class EyetrackerGui(QtGui.QMainWindow):
                 if self.plotting_window:
                     self._updatePlotWindow()
             except AttributeError as e:
-                print("Rewinding video...")
+                print("Rewinding input_movie...")
                 self.video_file.rewind()
             except Exception as e:
                 print(type(e), e)
@@ -449,7 +449,7 @@ class EyetrackerGui(QtGui.QMainWindow):
 
     def _show_video_clicked(self, event):
         """
-        Callback for the video display window button.
+        Callback for the input_movie display window button.
         """
         self.video_view.show()
 
@@ -502,7 +502,7 @@ class EyetrackerGui(QtGui.QMainWindow):
 
     def _save_config_clicked(self):
         """
-        Saves the current configuration for the current video.  Creates a
+        Saves the current configuration for the current input_movie.  Creates a
             file if necessary.
         """
         config = self._get_eyetracker_config()
@@ -647,9 +647,9 @@ class EyetrackerGui(QtGui.QMainWindow):
 
     def _loadVideo(self, path):
         """
-        Loads a video from a specified path.
+        Loads a input_movie from a specified path.
         """
-        self.video_file = VirtualCamera(path, "video")
+        self.video_file = VirtualCamera(path, "input_movie")
         self.video_path = path
         # frame0 = self.video_file.getFrame(0)
         frame0 = self.video_file.getImage()
@@ -699,7 +699,7 @@ class EyetrackerGui(QtGui.QMainWindow):
         Load movie button callback.
         """
         video_path = str(QtGui.QFileDialog.getOpenFileName(self,
-                         "Select a video file", VIDEO_DIR))
+                         "Select a input_movie file", VIDEO_DIR))
         if video_path:
             self._loadVideo(video_path)
             filename, ext = os.path.splitext(video_path)

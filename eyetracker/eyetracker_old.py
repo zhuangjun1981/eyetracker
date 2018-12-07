@@ -27,7 +27,7 @@ class Eyetracker(object):
     """
     Eyetracking program designed for CLI use.
 
-    Main function is to process a single video and create either an AVI of the
+    Main function is to process a single input_movie and create either an AVI of the
         output or an HDF5 that contains:
 
         1) The pupil/led positions for each frame
@@ -40,9 +40,9 @@ class Eyetracker(object):
     Parameters
     ----------
     video_file : str
-        Path to input video
+        Path to input input_movie
     output_file : str
-        Path for output video
+        Path for output input_movie
     config_file : str
         Path for config file. Default: None
     custom_algorithm : str
@@ -85,14 +85,14 @@ class Eyetracker(object):
             self.config = self._read_config(config_file)
             self._apply_config(self.config)
         else:
-            #perhaps one is saved for this video
+            #perhaps one is saved for this input_movie
             filename, ext = os.path.splitext(self.video_file)
             try:
                 self.config = self._read_config(filename+".cfg")
                 self._apply_config(self.config)
             except Exception as e:
                 #no configuration found, so we guess or automatically do it
-                raise IOError("No config file found for this video. %s" % e)
+                raise IOError("No config file found for this input_movie. %s" % e)
 
         filename, ext = os.path.splitext(self.output_file)
 
@@ -111,7 +111,7 @@ class Eyetracker(object):
             raise IOError("Output file type not supported...")
 
     def read_video(self, video_file):
-        self.video = VirtualCamera(video_file, 'video')
+        self.video = VirtualCamera(video_file, 'input_movie')
         self.frame_size = self.video.getImage().size()
 
 
@@ -126,7 +126,7 @@ class Eyetracker(object):
         else:
             raise RuntimeError("Unknown camera type? Can't get avi length.")
 
-        print("\nloaded video: {}".format(os.path.realpath(video_file)))
+        print("\nloaded input_movie: {}".format(os.path.realpath(video_file)))
         print("frame size: {}".format(self.frame_size))
         print("frame rate: {}".format(self.fps))
         print("number of frames: {}\n".format(self.no_frames))
@@ -145,7 +145,7 @@ class Eyetracker(object):
         pupil_positions = []
         pupil_area = []
 
-        self.video = VirtualCamera(self.video_file, 'video')
+        self.video = VirtualCamera(self.video_file, 'input_movie')
 
         while True:
             frame = self.video.getImage()
@@ -205,7 +205,7 @@ class Eyetracker(object):
                 config = np.string_(str(self.config))
                 self.hdf5_output.create_dataset("config", data=config)
 
-            #save video metadata
+            #save input_movie metadata
             meta = {
                 "width": self.frame_size[0],
                 "height": self.frame_size[1],
@@ -218,9 +218,9 @@ class Eyetracker(object):
             meta = np.string_(str(meta))
             self.hdf5_output.create_dataset("video_metadata", data=meta)
 
-            #save video ??? Does this work?  doesn't error...
+            #save input_movie ??? Does this work?  doesn't error...
             # try:
-            #     print("Saving copy of the video...")
+            #     print("Saving copy of the input_movie...")
             #     with open(self.video_file, 'rb') as f:
             #         binary_data = f.read()
             #         vbuffer = np.string_(binary_data)
