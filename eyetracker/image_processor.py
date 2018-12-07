@@ -528,7 +528,7 @@ class PupilLedDetector(object):
         ax3.set_axis_off()
         if self.led is not None:
             ax3.text(x=0.2, y=0.8, s='LED', horizontalalignment='left', verticalalignment='center')
-            ax3.text(x=0.2, y=0.7, s='center: ({:5d}, {:5d})'.format(self.led.center[0], self.led.center[1]),
+            ax3.text(x=0.2, y=0.7, s='center: ({:6.2f}, {:6.2f})'.format(self.led.center[0], self.led.center[1]),
                      horizontalalignment='left', verticalalignment='center')
             ax3.text(x=0.2, y=0.6, s='axes:  ({:6.2f}, {:6.2f})'.format(self.led.axes[0], self.led.axes[1]),
                      horizontalalignment='left', verticalalignment='center')
@@ -543,9 +543,9 @@ class PupilLedDetector(object):
         ax4.set_axis_off()
         if self.pupil is not None:
             ax4.text(x=0.2, y=0.8, s='Pupil', horizontalalignment='left', verticalalignment='center')
-            ax4.text(x=0.2, y=0.7, s='center: ({:5d}, {:5d})'.format(self.pupil.center[0], self.led.center[1]),
+            ax4.text(x=0.2, y=0.7, s='center: ({:6.2f}, {:6.2f})'.format(self.pupil.center[0], self.pupil.center[1]),
                      horizontalalignment='left', verticalalignment='center')
-            ax4.text(x=0.2, y=0.6, s='axes:  ({:6.2f}, {:6.2f})'.format(self.pupil.axes[0], self.led.axes[1]),
+            ax4.text(x=0.2, y=0.6, s='axes:  ({:6.2f}, {:6.2f})'.format(self.pupil.axes[0], self.pupil.axes[1]),
                      horizontalalignment='left', verticalalignment='center')
             ax4.text(x=0.2, y=0.5, s='angle: {:8.2f} deg'.format(self.pupil.angle),
                      horizontalalignment='left', verticalalignment='center')
