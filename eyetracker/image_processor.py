@@ -518,11 +518,42 @@ class PupilLedDetector(object):
         # ax2.set_title('preprocessed')
         # ax2.set_axis_off()
 
-        ax4 = f.add_subplot(3, 4, 4)
+        ax2 = f.add_subplot(3, 4, 2)
         if self.annotated is not None:
-           ax4.imshow(self.annotated)
-        ax4.set_title('annotated')
+           ax2.imshow(self.annotated)
+        ax2.set_title('annotated')
+        ax2.set_axis_off()
+
+        ax3 = f.add_subplot(3, 4, 3)
+        ax3.set_axis_off()
+        if self.led is not None:
+            ax3.text(x=0.2, y=0.8, s='LED', horizontalalignment='left', verticalalignment='center')
+            ax3.text(x=0.2, y=0.7, s='center: ({:5d}, {:5d})'.format(self.led.center[0], self.led.center[1]),
+                     horizontalalignment='left', verticalalignment='center')
+            ax3.text(x=0.2, y=0.6, s='axes:  ({:6.2f}, {:6.2f})'.format(self.led.axes[0], self.led.axes[1]),
+                     horizontalalignment='left', verticalalignment='center')
+            ax3.text(x=0.2, y=0.5, s='angle: {:8.2f} deg'.format(self.led.angle),
+                     horizontalalignment='left', verticalalignment='center')
+            ax3.text(x=0.2, y=0.4, s='area: {:9.1f}'.format(self.led.get_area()),
+                     horizontalalignment='left', verticalalignment='center')
+        else:
+            ax3.text(x=0.5, y=0.7, s='No LED', horizontalalignment='center', verticalalignment='center')
+
+        ax4 = f.add_subplot(3, 4, 4)
         ax4.set_axis_off()
+        if self.pupil is not None:
+            ax4.text(x=0.2, y=0.8, s='Pupil', horizontalalignment='left', verticalalignment='center')
+            ax4.text(x=0.2, y=0.7, s='center: ({:5d}, {:5d})'.format(self.pupil.center[0], self.led.center[1]),
+                     horizontalalignment='left', verticalalignment='center')
+            ax4.text(x=0.2, y=0.6, s='axes:  ({:6.2f}, {:6.2f})'.format(self.pupil.axes[0], self.led.axes[1]),
+                     horizontalalignment='left', verticalalignment='center')
+            ax4.text(x=0.2, y=0.5, s='angle: {:8.2f} deg'.format(self.pupil.angle),
+                     horizontalalignment='left', verticalalignment='center')
+            ax4.text(x=0.2, y=0.4, s='area: {:9.1f}'.format(self.pupil.get_area()),
+                     horizontalalignment='left', verticalalignment='center')
+        else:
+            ax4.text(x=0.5, y=0.7, s='No Pupil', horizontalalignment='center', verticalalignment='center')
+
 
         ax5 = f.add_subplot(3, 4, 5)
         if self.led_blurred is not None:
