@@ -17,6 +17,7 @@ import numpy as np
 import cv2
 from . import image_processor as ip
 import yaml
+import h5py
 
 FOURCC = 'XVID'
 FPS = 30
@@ -172,8 +173,32 @@ class Eyetracker(object):
             yaml.dump(param_dict, cfg_f)
 
     def _save_hdf5(self):
-        #todo: finish this!
-        pass
+
+        if os.path.isfile(self._data_file_path):
+            print('Overwriting existing data file: \n{}'.format(self._data_file_path))
+            os.remove(self._data_file_path)
+
+        data_f = h5py.File(self._data_file_path)
+        meta = 'input_movie_path: {}\n' \
+               'frame_number: {}\n' \
+               'frame_shape: {}\n'.format(self.input_movie_path, self.frame_num, self.frame_shape)
+        data_f.create_dataset('meta', data=meta)
+        data_f.create_dataset('detector_parameters', data=self.detector.string)
+        led_pos_dset = data_f.create_dataset('led_positions', data=self.led_positions)
+        led_pos_dset.attrs['unit'] = 'pixel'
+        led_pos_dset.attrs['format'] = '[row, col]'
+        led_shape_dset = data_f.create_dataset('led_shapes', data=self.led_shape)
+        led_shape_dset.attrs['unit'] = '[pixel, pixel, degree]'
+        led_shape_dset.attrs['format'] = '[first axis length, second axis length, ' \
+                                         'angle counter clockwise from right of first axis]'
+        pupil_pos_dset = data_f.create_dataset('pupil_positions', data=self.pupil_positions)
+        pupil_pos_dset.attrs['unit'] = 'pixel'
+        pupil_pos_dset.attrs['format'] = '[row, col]'
+        pupil_shape_dset = data_f.create_dataset('pupil_shapes', data=self.pupil_shape)
+        pupil_shape_dset.attrs['unit'] = '[pixel, pixel, degree]'
+        pupil_shape_dset.attrs['format'] = '[first axis length, second axis length, ' \
+                                         'angle counter clockwise from right of first axis]'
+        data_f.close()
 
     @property
     def _data_file_path(self):

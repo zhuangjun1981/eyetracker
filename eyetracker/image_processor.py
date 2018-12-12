@@ -383,7 +383,7 @@ class PupilLedDetector(object):
 
         if pupil_cons is not None:
             self.pupil_contoured = cv2.drawContours(image=cv2.cvtColor(src=self.pupil_openclosed, code=cv2.COLOR_GRAY2BGR),
-                                                    contours=pupil_cons, contourIdx=-1, color=(0, 255, 0), thickness=1)
+                                                    contours=pupil_cons, contourIdx=-1, color=(0, 255, 0), thickness=2)
 
         if pupil is not None:
             self.pupil = pupil.outof_roi(self.pupil_roi)
@@ -516,7 +516,7 @@ class PupilLedDetector(object):
 
     def show_results(self):
 
-        f = plt.figure(figsize=(12, 9))
+        f = plt.figure(figsize=(12, 9), tight_layout=True)
 
         ax1 = f.add_subplot(3, 4, 1)
         if self.original is not None:
@@ -556,7 +556,7 @@ class PupilLedDetector(object):
                      horizontalalignment='left', verticalalignment='center')
             ax3.text(x=0.2, y=0.5, s='angle: {:8.2f} deg'.format(self.led.angle),
                      horizontalalignment='left', verticalalignment='center')
-            ax3.text(x=0.2, y=0.4, s='area: {:9.1f}'.format(self.led.get_area()),
+            ax3.text(x=0.2, y=0.4, s='area: {:9.2f}'.format(self.led.get_area()),
                      horizontalalignment='left', verticalalignment='center')
         else:
             ax3.text(x=0.5, y=0.7, s='No LED', horizontalalignment='center', verticalalignment='center')
@@ -571,7 +571,7 @@ class PupilLedDetector(object):
                      horizontalalignment='left', verticalalignment='center')
             ax4.text(x=0.2, y=0.5, s='angle: {:8.2f} deg'.format(self.pupil.angle),
                      horizontalalignment='left', verticalalignment='center')
-            ax4.text(x=0.2, y=0.4, s='area: {:9.1f}'.format(self.pupil.get_area()),
+            ax4.text(x=0.2, y=0.4, s='area: {:9.2f}'.format(self.pupil.get_area()),
                      horizontalalignment='left', verticalalignment='center')
         else:
             ax4.text(x=0.5, y=0.7, s='No Pupil', horizontalalignment='center', verticalalignment='center')
@@ -597,7 +597,7 @@ class PupilLedDetector(object):
 
         ax8 = f.add_subplot(3, 4, 8)
         if self.led_contoured is not None:
-            ax8.imshow(self.led_contoured)
+            ax8.imshow(cv2.cvtColor(self.led_contoured, code=cv2.COLOR_BGR2RGB))
         ax8.set_axis_off()
         ax8.set_title('led contoured')
 
