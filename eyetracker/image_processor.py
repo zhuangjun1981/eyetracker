@@ -8,16 +8,16 @@ import matplotlib.pyplot as plt
 
 
 DEFAULT_PARA = {'pupil_is_equalize':True,
-                'led_roi':None,
-                'pupil_roi':None,
-                'led_binary_threshold':230,
-                'pupil_binary_threshold':210,
+                'led_roi':(200, 300, 280, 400),
+                'pupil_roi':(100, 350, 200, 500),
+                'led_binary_threshold':200,
+                'pupil_binary_threshold':240,
                 'led_blur':2,
                 'pupil_blur':2,
                 'led_openclose_iter':1,
-                'pupil_openclose_iter':4,
+                'pupil_openclose_iter':10,
                 'led_min_size':1,
-                'pupil_min_size':200,
+                'pupil_min_size':500,
                 'led_max_size':1000,
                 'led_mask_dilation':5}
 
@@ -28,7 +28,27 @@ def apply_roi(img, roi):
     :return: cropped image defined by roi
     """
     if roi:
-        return img[roi[0]:roi[1], roi[2]:roi[3]]
+        if int(roi[0]) > img.shape[0]:
+            raise ValueError('top of roi blew image')
+        else:
+            top = int(roi[0])
+
+        if int(roi[1]) > img.shape[0]:
+            bottom = img.shape[0]
+        else:
+            bottom = int(roi[1])
+
+        if int(roi[2]) > img.shape[1]:
+            raise ValueError('left of roi outside the image')
+        else:
+            left = int(roi[2])
+
+        if int(roi[3]) > img.shape[1]:
+            right = img.shape[1]
+        else:
+            right = int(roi[3])
+
+        return img[top:bottom, left:right]
     else:
         return img
 
@@ -324,15 +344,15 @@ class PupilLedDetector(object):
         self.led_openclosed = cv2.morphologyEx(src=self.led_openclosed, op=cv2.MORPH_CLOSE, kernel=led_openclose_ker)
         _, led_cons, _ = cv2.findContours(image=self.led_openclosed,
                                           mode=cv2.RETR_TREE, method=cv2.CHAIN_APPROX_SIMPLE)
-        print('number of led contours: {}'.format(len(led_cons)))
+        # print('number of led contours: {}'.format(len(led_cons)))
 
         self.led_contoured = cv2.drawContours(image=cv2.cvtColor(src=self.led_openclosed, code=cv2.COLOR_GRAY2BGR),
-                                              contours=led_cons, contourIdx=-1, color=(255, 0, 0), thickness=1)
-        led = self._filter_led_contour(led_cons)
+                                              contours=led_cons, contourIdx=-1, color=(0, 0, 255), thickness=1)
+        led = self._filter_led_contours(led_cons)
 
         if led:
             self.led = led.outof_roi(self.led_roi)
-            self.annotated = self.led.draw(img=self.annotated, color=(255, 0, 0), thickness=2)
+            self.annotated = self.led.draw(img=self.annotated, color=(0, 0, 255), thickness=2)
             return True
         else:
             return False
@@ -356,22 +376,23 @@ class PupilLedDetector(object):
         _, pupil_cons, _ = cv2.findContours(image=self.pupil_openclosed, mode=cv2.RETR_TREE,
                                             method=cv2.CHAIN_APPROX_SIMPLE)
 
+        pupil, pupil_cons = self._filter_pupil_contours(pupil_cons)
 
+        # print(pupil)
+        # print(pupil_cons)
 
-        pupil, pupil_cons = self._filter_pupil_contour(pupil_cons)
-
-        if pupil_cons:
+        if pupil_cons is not None:
             self.pupil_contoured = cv2.drawContours(image=cv2.cvtColor(src=self.pupil_openclosed, code=cv2.COLOR_GRAY2BGR),
                                                     contours=pupil_cons, contourIdx=-1, color=(0, 255, 0), thickness=1)
 
-        if pupil:
+        if pupil is not None:
             self.pupil = pupil.outof_roi(self.pupil_roi)
             self.annotated = self.pupil.draw(img=self.annotated, color=(0, 255, 0), thickness=2)
             return True
         else:
             return False
 
-    def _filter_led_contour(self, cons):
+    def _filter_led_contours(self, cons):
         """
         for each detected potential led contour, first pick contours with at least 5 points,
         then pick the roundest one
@@ -436,7 +457,7 @@ class PupilLedDetector(object):
 
             return new_cons
 
-    def _filter_pupil_contour(self, cons):
+    def _filter_pupil_contours(self, cons):
         """
         for each detected potential pupil contour after LED masking, pick the
         roundest one and the one closest to the pupil from last frame
@@ -462,12 +483,12 @@ class PupilLedDetector(object):
                 cons_area = [cons_filtered[i] for i in size_ind]
                 circ_area = [get_circularity(con) for con in cons_area]
 
-                if not ells: # no pupil ellipse bigger than self.pupil_min_size
+                if not ells_area: # no pupil ellipse bigger than self.pupil_min_size
                     return None, None
                 else:
                     if self.last_pupil: # there is last pupil pick the closest one
                         dises = [dist2d(ell.center, self.last_pupil.center) for ell in ells_area]
-                        return ells_area[int(np.argmin(dises))]
+                        return ells_area[int(np.argmin(dises))], cons_area
                     else: # no last pupil information pick the roundest one
                         return ells_area[int(np.argmax(circ_area))], cons_area
 
@@ -520,7 +541,8 @@ class PupilLedDetector(object):
 
         ax2 = f.add_subplot(3, 4, 2)
         if self.annotated is not None:
-           ax2.imshow(self.annotated)
+            # ax2.imshow(self.annotated)
+            ax2.imshow(cv2.cvtColor(self.annotated, code=cv2.COLOR_BGR2RGB))
         ax2.set_title('annotated')
         ax2.set_axis_off()
 
@@ -620,6 +642,30 @@ class PupilLedDetector(object):
                      'led_mask_dilation': self.led_mask_dilation}
 
         return para_dict
+
+    @property
+    def string(self):
+        string = '\nLED:\n' \
+                 'led_roi: {}\n' \
+                 'led_blur: {}\n' \
+                 'led_binary_thresh: {}\n' \
+                 'led_openclose_iter: {}\n' \
+                 'led_min_size: {}\n' \
+                 'led_max_size: {}\n' \
+                 'led_mask_dilation: {}\n' \
+                 '\nPUPIL:\n' \
+                 'pupil_is_equalize: {}\n' \
+                 'pupil_roi: {}\n' \
+                 'pupil_blur: {}\n' \
+                 'pupil_binary_thresh: {}\n' \
+                 'pupil_openclose_iter: {}\n' \
+                 'pupil_min_size: {}\n'.format(self.led_roi, self.led_blur, self.led_binary_thresh,
+                                               self.led_openclose_iter, self.led_min_size, self.led_max_size,
+                                               self.led_mask_dilation, self.pupil_is_equalize, self.pupil_roi,
+                                               self.pupil_blur, self.pupil_binary_thresh, self.pupil_openclose_iter,
+                                               self.pupil_min_size)
+
+        return string
 
 
 
