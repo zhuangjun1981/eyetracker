@@ -6,7 +6,6 @@ dependencies:
   - numpy
   - opencv3
   - pyqt
-  - qtpy
   - h5py
   - pyqtgraph
   - pyyaml

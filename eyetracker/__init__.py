@@ -1,2 +1,2 @@
-__author__ = "derricw/jun"
-__version__ = 0.1
+__author__ = "jun"
+__version__ = 3.0

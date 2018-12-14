@@ -1,6 +1,6 @@
 import unittest
 import os
-from .. import eyetracker as ec
+import eyetracker.eyetracker as ec
 
 class TestImageProcessor(unittest.TestCase):
 
@@ -20,3 +20,7 @@ class TestImageProcessor(unittest.TestCase):
         os.remove(output_movie_path)
         os.remove(output_config_path)
         os.remove(output_hdf5_path)
+
+if __name__ == '__main__':
+    test = TestImageProcessor()
+    test.test_process_file()
