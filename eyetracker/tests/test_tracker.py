@@ -1,6 +1,6 @@
 import unittest
 import os
-import eyetracker.eyetracker as ec
+import eyetracker.tracker as ec
 
 class TestImageProcessor(unittest.TestCase):
 

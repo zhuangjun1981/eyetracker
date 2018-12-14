@@ -1,5 +1,5 @@
 """
-eyetracker.py
+tracker.py
 
 Allen Institute for Brain Science
 

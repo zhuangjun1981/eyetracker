@@ -10,7 +10,7 @@ Created on Sep 1, 2014
 
 Derric's new eyetracking algorithm.
 
-Used by eyetracker.py and eyetrackergui.py
+Used by tracker.py and eyetrackergui.py
 
 """
 

@@ -1,5 +1,5 @@
 """
-eyetracker.py
+tracker.py
 
 Allen Institute for Brain Science
 
@@ -14,7 +14,7 @@ import time
 import os
 import numpy as np
 import cv2
-from . import image_processor as ip
+import eyetracker.detector as dt
 import yaml
 import h5py
 
@@ -118,11 +118,11 @@ class Eyetracker(object):
             print('load existing config file.')
             with open(self._cfg_file_path, 'r') as cfg_f:
                 params = yaml.load(cfg_f)
-            self.detector = ip.PupilLedDetector()
+            self.detector = dt.PupilLedDetector()
             self.detector.load_parameters(**params)
         else:
             print('did not find config file. load default config.')
-            self.detector = ip.PupilLedDetector()
+            self.detector = dt.PupilLedDetector()
 
         print(self.detector.string)
 

@@ -13,7 +13,7 @@ Displays a GUI for adjusting input_movie parameters and thresholds for pruning o
 
 Main purpose is to load eyetracking videos and process them.
 
-CLI counterpart is "eyetracker.py"
+CLI counterpart is "tracker.py"
 
 '''
 import sys
@@ -780,7 +780,7 @@ class EyetrackerGui(QtGui.QMainWindow):
         else:
             custom = ""
 
-        eyetracker_path = os.path.join(CURR_DIR, 'eyetracker.py')
+        eyetracker_path = os.path.join(CURR_DIR, 'tracker.py')
         exec_str = "{} {} {} {} -c {}{}{}".format(COMMAND_PREFIX,
                                                   eyetracker_path,
                                                   self.video_path,

@@ -2,7 +2,7 @@ import unittest
 import os
 import cv2
 import numpy as np
-from .. import image_processor as ip
+import eyetracker.detector as dt
 
 class TestImageProcessor(unittest.TestCase):
 
@@ -12,7 +12,7 @@ class TestImageProcessor(unittest.TestCase):
         os.chdir(curr_folder)
 
     def test_Ellipse(self):
-        ell = ip.Ellipse(center=(64.3, 192.2), axes=(22.6, 5.7), angle=45.0)
+        ell = dt.Ellipse(center=(64.3, 192.2), axes=(22.6, 5.7), angle=45.0)
         mask = ell.get_binary_mask((256, 256))
 
         assert(mask[64, 192] == 1)
@@ -30,12 +30,12 @@ class TestImageProcessor(unittest.TestCase):
 
     def test_Ellipse_get_intensity(self):
         img = np.ones((256, 256))
-        ell = ip.Ellipse(center=(120.5, 70.8), axes=(22.6, 5.7), angle=25.5)
+        ell = dt.Ellipse(center=(120.5, 70.8), axes=(22.6, 5.7), angle=25.5)
         int = ell.get_intensity(img)
         assert(int == 1)
 
     def test_Ellipse_roi(self):
-        ell = ip.Ellipse(center=(64.3, 192.2), axes=(22.6, 5.7), angle=45.0)
+        ell = dt.Ellipse(center=(64.3, 192.2), axes=(22.6, 5.7), angle=45.0)
         mask = ell.get_binary_mask((256, 256))
 
         roi = [0, 128, 128, 256]
@@ -65,7 +65,7 @@ class TestImageProcessor(unittest.TestCase):
 
     def test_PupilLedDetector_detect(self):
         img = np.load(os.path.join('test_files', 'test_img.npy'))
-        det = ip.PupilLedDetector(led_roi=(200, 300, 280, 400),
+        det = dt.PupilLedDetector(led_roi=(200, 300, 280, 400),
                                   pupil_roi=(100, 350, 200, 500),
                                   led_binary_threshold=200,
                                   led_openclose_iter=1,
@@ -80,7 +80,7 @@ class TestImageProcessor(unittest.TestCase):
 
     def test_PupilLedDetector_detect2(self):
         img = np.load(os.path.join('test_files', 'test_img2.npy'))
-        det = ip.PupilLedDetector(led_roi=(80, 140, 130, 200),
+        det = dt.PupilLedDetector(led_roi=(80, 140, 130, 200),
                                   pupil_roi=(0, 240, 0, 320),
                                   led_binary_threshold=250,
                                   led_openclose_iter=1,

@@ -1,4 +1,4 @@
-name: eyetracker3
+name: eyetracker
 channels:
   - menpo
 dependencies:
@@ -10,3 +10,4 @@ dependencies:
   - pyqtgraph
   - pyyaml
   - matplotlib # this may not be required
+  - pytest # this may not be required
