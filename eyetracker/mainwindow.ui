@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1046</width>
-    <height>790</height>
+    <width>1066</width>
+    <height>776</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -22,9 +22,9 @@
     <property name="geometry">
      <rect>
       <x>820</x>
-      <y>230</y>
-      <width>211</width>
-      <height>191</height>
+      <y>240</y>
+      <width>241</width>
+      <height>171</height>
      </rect>
     </property>
     <property name="title">
@@ -34,14 +34,14 @@
      <item row="4" column="0">
       <widget class="QLabel" name="label_pupilBinary">
        <property name="text">
-        <string>Binary Thresh</string>
+        <string>Binary Thresh (uint8)</string>
        </property>
       </widget>
      </item>
      <item row="6" column="0">
       <widget class="QLabel" name="label_pupilMinSize">
        <property name="text">
-        <string>Min Size</string>
+        <string>Min Size (uint)</string>
        </property>
       </widget>
      </item>
@@ -53,27 +53,39 @@
       </widget>
      </item>
      <item row="4" column="1">
-      <widget class="QLineEdit" name="lineEdit_pupilBinary"/>
+      <widget class="QLineEdit" name="lineEdit_pupilBinary">
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
      </item>
      <item row="5" column="1">
-      <widget class="QLineEdit" name="lineEdit_pupilOpenClose"/>
+      <widget class="QLineEdit" name="lineEdit_pupilOpenClose">
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
      </item>
      <item row="3" column="0">
       <widget class="QLabel" name="label_pupilBlur">
        <property name="text">
-        <string>Blur</string>
+        <string>Blur (uint)</string>
        </property>
       </widget>
      </item>
      <item row="5" column="0">
       <widget class="QLabel" name="label_pupilOpenClose">
        <property name="text">
-        <string>Open Close</string>
+        <string>Open Close (uint)</string>
        </property>
       </widget>
      </item>
      <item row="3" column="1">
-      <widget class="QLineEdit" name="lineEdit_pupilBlur"/>
+      <widget class="QLineEdit" name="lineEdit_pupilBlur">
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
      </item>
      <item row="0" column="0">
       <widget class="QLabel" name="label_pupilEqualize">
@@ -93,7 +105,11 @@
       </widget>
      </item>
      <item row="6" column="1">
-      <widget class="QLineEdit" name="lineEdit_pupilMinSize"/>
+      <widget class="QLineEdit" name="lineEdit_pupilMinSize">
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
      </item>
      <item row="1" column="1">
       <widget class="QLabel" name="label_pupilROIValue">
@@ -108,8 +124,8 @@
     <property name="geometry">
      <rect>
       <x>820</x>
-      <y>10</y>
-      <width>211</width>
+      <y>20</y>
+      <width>241</width>
       <height>201</height>
      </rect>
     </property>
@@ -120,35 +136,35 @@
      <item row="1" column="0">
       <widget class="QLabel" name="label_ledBlur">
        <property name="text">
-        <string>Blur</string>
+        <string>Blur (uint)</string>
        </property>
       </widget>
      </item>
      <item row="3" column="0">
       <widget class="QLabel" name="label_ledOpenClose">
        <property name="text">
-        <string>Open Close</string>
+        <string>Open Close (uint)</string>
        </property>
       </widget>
      </item>
      <item row="6" column="0">
       <widget class="QLabel" name="label">
        <property name="text">
-        <string>Mask dilation</string>
+        <string>Mask dilation (uint)</string>
        </property>
       </widget>
      </item>
      <item row="2" column="0">
       <widget class="QLabel" name="label_ledBinary">
        <property name="text">
-        <string>Binary Thresh</string>
+        <string>Binary Thresh (uint8)</string>
        </property>
       </widget>
      </item>
      <item row="4" column="0">
       <widget class="QLabel" name="label_led_min">
        <property name="text">
-        <string>Min Size</string>
+        <string>Min Size (float)</string>
        </property>
       </widget>
      </item>
@@ -162,27 +178,51 @@
      <item row="5" column="0">
       <widget class="QLabel" name="label_ledMaxSize">
        <property name="text">
-        <string>Max Size</string>
+        <string>Max Size (float)</string>
        </property>
       </widget>
      </item>
      <item row="1" column="1">
-      <widget class="QLineEdit" name="lineEdit_ledBlur"/>
+      <widget class="QLineEdit" name="lineEdit_ledBlur">
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
      </item>
      <item row="2" column="1">
-      <widget class="QLineEdit" name="lineEdit_ledBinary"/>
+      <widget class="QLineEdit" name="lineEdit_ledBinary">
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
      </item>
      <item row="3" column="1">
-      <widget class="QLineEdit" name="lineEdit_ledOpenClose"/>
+      <widget class="QLineEdit" name="lineEdit_ledOpenClose">
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
      </item>
      <item row="4" column="1">
-      <widget class="QLineEdit" name="lineEdit_ledMinSize"/>
+      <widget class="QLineEdit" name="lineEdit_ledMinSize">
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
      </item>
      <item row="5" column="1">
-      <widget class="QLineEdit" name="lineEdit_ledMaxSize"/>
+      <widget class="QLineEdit" name="lineEdit_ledMaxSize">
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
      </item>
      <item row="6" column="1">
-      <widget class="QLineEdit" name="lineEdit_ledMaskDilation"/>
+      <widget class="QLineEdit" name="lineEdit_ledMaskDilation">
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
      </item>
      <item row="0" column="1">
       <widget class="QLabel" name="label_ledROIValue">
@@ -197,9 +237,9 @@
     <property name="geometry">
      <rect>
       <x>820</x>
-      <y>430</y>
-      <width>211</width>
-      <height>251</height>
+      <y>420</y>
+      <width>241</width>
+      <height>271</height>
      </rect>
     </property>
     <property name="title">
@@ -218,7 +258,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>90</y>
+      <y>100</y>
       <width>801</width>
       <height>591</height>
      </rect>
@@ -231,8 +271,8 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>700</y>
-      <width>581</width>
+      <y>710</y>
+      <width>611</width>
       <height>31</height>
      </rect>
     </property>
@@ -252,8 +292,8 @@
     </property>
     <property name="geometry">
      <rect>
-      <x>740</x>
-      <y>690</y>
+      <x>770</x>
+      <y>700</y>
       <width>50</width>
       <height>50</height>
      </rect>
@@ -275,7 +315,7 @@
     </property>
     <property name="icon">
      <iconset>
-      <normaloff>res/pause.png</normaloff>res/pause.png</iconset>
+      <normaloff>res/play.png</normaloff>res/play.png</iconset>
     </property>
     <property name="iconSize">
      <size>
@@ -287,8 +327,8 @@
    <widget class="QPushButton" name="pushButton_saveConfig">
     <property name="geometry">
      <rect>
-      <x>860</x>
-      <y>690</y>
+      <x>890</x>
+      <y>700</y>
       <width>50</width>
       <height>50</height>
      </rect>
@@ -322,8 +362,8 @@
    <widget class="QPushButton" name="pushButton_loadConfig">
     <property name="geometry">
      <rect>
-      <x>800</x>
-      <y>690</y>
+      <x>830</x>
+      <y>700</y>
       <width>50</width>
       <height>50</height>
      </rect>
@@ -360,8 +400,8 @@
     </property>
     <property name="geometry">
      <rect>
-      <x>980</x>
-      <y>690</y>
+      <x>1010</x>
+      <y>700</y>
       <width>50</width>
       <height>50</height>
      </rect>
@@ -398,8 +438,8 @@
     </property>
     <property name="geometry">
      <rect>
-      <x>920</x>
-      <y>690</y>
+      <x>950</x>
+      <y>700</y>
       <width>51</width>
       <height>51</height>
      </rect>
@@ -421,9 +461,9 @@
    <widget class="QGroupBox" name="groupBox_movieInfo">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>10</y>
-      <width>801</width>
+      <x>100</x>
+      <y>20</y>
+      <width>711</width>
       <height>71</height>
      </rect>
     </property>
@@ -439,21 +479,33 @@
        <height>31</height>
       </rect>
      </property>
+     <property name="font">
+      <font>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
      <property name="text">
       <string>File path:</string>
      </property>
     </widget>
-    <widget class="QLabel" name="label_movieInfo">
+    <widget class="QLabel" name="label_movieFrameNumber">
      <property name="geometry">
       <rect>
        <x>10</x>
        <y>40</y>
-       <width>71</width>
+       <width>131</width>
        <height>21</height>
       </rect>
      </property>
+     <property name="font">
+      <font>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
      <property name="text">
-      <string>Frame info:</string>
+      <string>Total Frame Number :</string>
      </property>
     </widget>
     <widget class="QLabel" name="label_moviePathValue">
@@ -469,12 +521,44 @@
       <string>None</string>
      </property>
     </widget>
-    <widget class="QLabel" name="label_movieInfoValue">
+    <widget class="QLabel" name="label_movieFrameNumberValue">
      <property name="geometry">
       <rect>
-       <x>80</x>
+       <x>140</x>
        <y>40</y>
-       <width>711</width>
+       <width>101</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>None</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_movieFrameShape">
+     <property name="geometry">
+      <rect>
+       <x>360</x>
+       <y>40</y>
+       <width>171</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>Frame shape (height, width) : </string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_movieFrameShapeValue">
+     <property name="geometry">
+      <rect>
+       <x>536</x>
+       <y>40</y>
+       <width>181</width>
        <height>20</height>
       </rect>
      </property>
@@ -483,14 +567,14 @@
      </property>
     </widget>
    </widget>
-   <widget class="QLineEdit" name="lineEdit_frameNum">
+   <widget class="QLineEdit" name="lineEdit_currframeNum">
     <property name="enabled">
      <bool>false</bool>
     </property>
     <property name="geometry">
      <rect>
-      <x>602</x>
-      <y>689</y>
+      <x>630</x>
+      <y>699</y>
       <width>131</width>
       <height>51</height>
      </rect>
@@ -507,26 +591,46 @@
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
+   <widget class="QPushButton" name="pushButton_loadMovie">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>20</y>
+      <width>81</width>
+      <height>71</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>15</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="autoFillBackground">
+     <bool>false</bool>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: lightgray</string>
+    </property>
+    <property name="text">
+     <string>LOAD</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1046</width>
+     <width>1066</width>
      <height>21</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menuFile">
-    <property name="title">
-     <string>File</string>
-    </property>
-    <addaction name="actionLoad"/>
-    <addaction name="actionQuit"/>
-   </widget>
-   <addaction name="menuFile"/>
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
   <action name="actionQuit">
    <property name="icon">
     <iconset>

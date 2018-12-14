@@ -292,8 +292,8 @@ class PupilLedDetector(object):
         self.last_led = None  # ellipse object
         # self.last_pupil_velocity = (0, 0) # not used
 
-    def load_parameters(self, pupil_is_equalize, led_roi, pupil_roi, led_binary_threshold, pupil_binary_threshold, led_blur,
-                        pupil_blur, led_openclose_iter, pupil_openclose_iter, led_min_size, pupil_min_size,
+    def load_parameters(self, pupil_is_equalize, led_roi, pupil_roi, led_binary_threshold, pupil_binary_threshold,
+                        led_blur, pupil_blur, led_openclose_iter, pupil_openclose_iter, led_min_size, pupil_min_size,
                         led_max_size, led_mask_dilation):
         # preprocessing
         self.pupil_is_equalize = pupil_is_equalize
