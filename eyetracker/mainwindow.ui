@@ -521,24 +521,17 @@
     <property name="title">
      <string>File</string>
     </property>
-    <widget class="QMenu" name="menuLoad">
-     <property name="title">
-      <string>Load</string>
-     </property>
-     <property name="icon">
-      <iconset>
-       <normaloff>res/load.png</normaloff>res/load.png</iconset>
-     </property>
-     <addaction name="action_load_movie"/>
-     <addaction name="separator"/>
-    </widget>
-    <addaction name="menuLoad"/>
+    <addaction name="actionLoad"/>
     <addaction name="actionQuit"/>
    </widget>
    <addaction name="menuFile"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionQuit">
+   <property name="icon">
+    <iconset>
+     <normaloff>res/remove.png</normaloff>res/remove.png</iconset>
+   </property>
    <property name="text">
     <string>Quit</string>
    </property>
@@ -611,6 +604,15 @@
   <action name="actionVideo">
    <property name="text">
     <string>Video</string>
+   </property>
+  </action>
+  <action name="actionLoad">
+   <property name="icon">
+    <iconset>
+     <normaloff>res/load.png</normaloff>res/load.png</iconset>
+   </property>
+   <property name="text">
+    <string>Load</string>
    </property>
   </action>
  </widget>
