@@ -7,8 +7,6 @@ Allen Institute for Brain Science
 
 @created: Dec 06, 2018
 
-CLI version of the GUI eyetracker.  Used for batch processing.
-
 """
 
 import sys
