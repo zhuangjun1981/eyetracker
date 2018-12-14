@@ -16,7 +16,7 @@ class TestImageProcessor(unittest.TestCase):
         output_movie_path = tracker._output_movie_path
         output_config_path = tracker._cfg_file_path
         output_hdf5_path = tracker._data_file_path
-        tracker.process_file()
+        tracker.process_movie()
         os.remove(output_movie_path)
         os.remove(output_config_path)
         os.remove(output_hdf5_path)

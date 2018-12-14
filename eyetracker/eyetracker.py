@@ -12,6 +12,7 @@ CLI version of the GUI eyetracker.  Used for batch processing.
 """
 
 import sys
+import time
 import os
 import numpy as np
 import cv2
@@ -127,9 +128,17 @@ class Eyetracker(object):
 
         print(self.detector.string)
 
-    def process_file(self):
+    def process_movie(self):
+
+        time0 = time.time()
 
         for frame_i in range(self.frame_num):
+
+            # if frame_i % (self.frame_num / 10) == 0:
+            if frame_i % (self.frame_num / 100) == 0:
+                time_used_min = (time.time() - time0) / 60.
+                print('{:08.2f} minutes: {:02d}% of movie processed.'.
+                      format(time_used_min, int(100 * frame_i / self.frame_num)))
 
             self.input_movie.set(cv2.CAP_PROP_POS_FRAMES, frame_i)
             _, curr_frame = self.input_movie.read()
@@ -161,6 +170,8 @@ class Eyetracker(object):
         self._save_hdf5()
         self.clear()
 
+        print('{:08.2f} minutes. Done.'.format((time.time() - time0) / 60.))
+
     def _save_cfg(self):
 
         if os.path.isfile(self._cfg_file_path):
@@ -168,7 +179,7 @@ class Eyetracker(object):
             os.remove(self._cfg_file_path)
 
         param_dict = self.detector.get_parameter_dict()
-        print(param_dict)
+        # print(param_dict)
         with open(self._cfg_file_path, 'w') as cfg_f:
             yaml.dump(param_dict, cfg_f)
 
