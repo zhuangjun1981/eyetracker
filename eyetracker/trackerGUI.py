@@ -1,3 +1,4 @@
+import os
 import sys
 import cv2
 import numpy as np
@@ -5,6 +6,9 @@ import eyetracker.detector as dt
 import eyetracker.mainwindow_layout as mwl
 from PyQt5 import QtCore, QtGui, QtWidgets
 import pyqtgraph as pg
+import yaml
+
+PACKAGE_DIR = os.path.dirname(os.path.realpath(__file__))
 
 class EyetrackerGui(QtWidgets.QMainWindow):
 
@@ -38,7 +42,7 @@ class EyetrackerGui(QtWidgets.QMainWindow):
         self.ui.lineEdit_pupilOpenClose.textChanged.connect(self._update_parameters)
         self.ui.lineEdit_pupilMinSize.textChanged.connect(self._update_parameters)
 
-        self.ui.pushButton_loadMovie.clicked.connect(self._load_movie_clicked)
+        self.ui.pushButton_loadMovie.clicked.connect(self._load_movie)
 
         # 0: no movie loaded
         # 1: movie loaded and paused
@@ -75,6 +79,23 @@ class EyetrackerGui(QtWidgets.QMainWindow):
         self.movie_path = None
         self.movie_frame_num = 0
         self.movie_frame_shape = (100, 100) # (height, width)
+        self.curr_frame_num = None
+        self._show_movie_info()
+
+        # set slider
+        self.ui.horizontalSlider_currentFrame.setRange(0, 1)
+        self.ui.horizontalSlider_currentFrame.setValue(0)
+        self.ui.horizontalSlider_currentFrame.setEnabled(False)
+
+        # set current frame
+        self.ui.lineEdit_currframeNum.setText('0')
+        self.ui.lineEdit_currframeNum.setEnabled(False)
+
+        # set buttons
+        self.ui.pushButton_pauseplay.setIcon(QtGui.QIcon(os.path.join(PACKAGE_DIR, "res", "play.png")))
+        self.ui.pushButton_pauseplay.setEnabled(False)
+        self.ui.pushButton_showResult.setEnabled(False)
+        self.ui.pushButton_process.setEnabled(False)
 
         # initiated detector
         self.detector = dt.PupilLedDetector(led_roi=self._qt_roi_2_detector_roi(self.led_roi),
@@ -106,9 +127,9 @@ class EyetrackerGui(QtWidgets.QMainWindow):
 
     def _show_movie_info(self):
 
-        self.ui.label_moviePathValue.setText(str(self.movie_path))
-        self.ui.label_movieFrameNumber.setText(str(self.movie_frame_num))
-        self.ui.label_movieFrameShape.setText(str(self.movie_frame_shape))
+        self.ui.label_moviePathValue.setText(str(os.path.realpath(self.movie_path)))
+        self.ui.label_movieFrameNumberValue.setText(str(self.movie_frame_num))
+        self.ui.label_movieFrameShapeValue.setText(str(self.movie_frame_shape))
 
     def _show_detector_parameters(self):
 
@@ -127,8 +148,64 @@ class EyetrackerGui(QtWidgets.QMainWindow):
         self.ui.lineEdit_pupilOpenClose.setText(str(self.detector.pupil_openclose_iter))
         self.ui.lineEdit_pupilMinSize.setText('{:8.2f}'.format(self.detector.pupil_min_size))
 
-    def _load_movie_clicked(self):
-        pass
+    def _load_movie(self):
+
+        if self.movie_path is not None:
+            last_dir = os.path.dirname(self.movie_path)
+        else:
+            last_dir = os.path.join(PACKAGE_DIR, 'tests', 'test_files')
+
+        self.movie_path = QtWidgets.QFileDialog.getOpenFileName(self, caption="select a input .avi movie file",
+                                                                    directory=last_dir,
+                                                                    filter='*.avi')
+        self.movie_path = os.path.realpath(self.movie_path[0])
+
+        # load movie
+        self.video_capture = cv2.VideoCapture(self.movie_path)
+        self.movie_frame_num = int(self.video_capture.get(cv2.CAP_PROP_FRAME_COUNT))
+        if self.movie_frame_num > 0:
+            self.movie_frame_shape = (int(self.video_capture.get(cv2.CAP_PROP_FRAME_HEIGHT)),
+                                      int(self.video_capture.get(cv2.CAP_PROP_FRAME_WIDTH)))
+
+            # display info
+            self._show_movie_info()
+
+            # try to load config file
+            self._load_config()
+
+            # set frame slider
+            self.ui.horizontalSlider_currentFrame.setEnabled(True)
+            self.ui.horizontalSlider_currentFrame.setRange(0, self.movie_frame_num-1)
+            self.ui.horizontalSlider_currentFrame.setValue(0)
+
+            # set frame lineEdit
+            self.ui.lineEdit_currframeNum.setEnabled(True)
+            self.ui.lineEdit_currframeNum.setText('0')
+
+            # set buttons
+            self.ui.pushButton_pauseplay.setEnabled(True)
+            self.ui.pushButton_pauseplay.setIcon(QtGui.QIcon(os.path.join(PACKAGE_DIR, "res", "play.png")))
+            self.ui.pushButton_showResult.setEnabled(True)
+            self.ui.pushButton_process.setEnabled(True)
+
+            # display frame
+            self.video_capture.set(cv2.CAP_PROP_POS_FRAMES, 0)
+            _, curr_frame = self.video_capture.read()
+            self.curr_frame_num = 0
+
+            self.detector.load_first_frame(curr_frame)
+            self.detector.detect()
+            self._show_image(self.detector.annotated)
+
+            # show result text
+            self.ui.textBrowser_results.setText(self.detector.result_str)
+
+            self.status = 1
+
+        else: # no frame in the movie
+            print('\nno frame in the selected movie file: \n{}'.format(self.movie_path))
+            self.clear()
+            return
 
     def _playpause_clicked(self):
         pass
@@ -139,8 +216,44 @@ class EyetrackerGui(QtWidgets.QMainWindow):
     def _save_config_clicked(self):
         pass
 
-    def _load_config_clicked(self):
-        pass
+    def _load_config(self):
+
+        if os.path.isfile(self.config_path):
+            print('\nloading existing config file: \n{}'.format(self.config_path))
+            with open(self.config_path, 'r') as config_f:
+                param_dict = yaml.load(config_f)
+                print(param_dict)
+        else:
+            print('\ncannnot find existing config file. load the default detector parameters.')
+            detector = dt.PupilLedDetector()
+            param_dict = detector.get_parameter_dict()
+
+        if self.movie_path is None:
+            self.led_roi.setPos((40, 40))
+            self.led_roi.setSize((20, 20))
+            self.pupil_roi.setPos((20, 20))
+            self.pupil_roi.setSize((60, 60))
+
+        if param_dict['led_roi'] is None:
+            self.led_roi.setPos((0, 0))
+            self.led_roi.setSize((self.movie_frame_shape[1], self.movie_frame_shape[0]))
+            param_dict['led_roi'] = self._qt_roi_2_detector_roi(self.led_roi)
+        else:
+            led_roi_pos, led_roi_size = self._detector_roi_2_qt_roi(param_dict['led_roi'])
+            self.led_roi.setPos(led_roi_pos)
+            self.led_roi.setSize(led_roi_size)
+
+        if param_dict['pupil_roi'] is None:
+            self.pupil_roi.setPos((0, 0))
+            self.pupil_roi.setSize((self.movie_frame_shape[1], self.movie_frame_shape[0]))
+            param_dict['pupil_roi'] = self._qt_roi_2_detector_roi(self.pupil_roi)
+        else:
+            pupil_roi_pos, pupil_roi_size = self._detector_roi_2_qt_roi(param_dict['pupil_roi'])
+            self.pupil_roi.setPos(pupil_roi_pos)
+            self.pupil_roi.setSize(pupil_roi_size)
+
+        self.detector.load_parameters(**param_dict)
+        self._show_detector_parameters()
 
     def _qt_roi_2_detector_roi(self, qt_roi):
 
@@ -150,6 +263,27 @@ class EyetrackerGui(QtWidgets.QMainWindow):
         right = left + qt_roi.size()[0]
 
         return (int(top), int(bottom), int(left), int(right))
+
+    def _detector_roi_2_qt_roi(self, detector_roi):
+
+        pos = (detector_roi[2], self.movie_frame_shape[0] - detector_roi[1])
+        size = (detector_roi[3] - detector_roi[2], detector_roi[1] - detector_roi[0])
+
+        return pos, size
+
+    def _show_image(self, img):
+
+        img_to_show = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        self.movie.setImage(cv2.flip(cv2.transpose(img_to_show), 1))
+
+    @property
+    def config_path(self):
+
+        if self.movie_path is not None:
+            return os.path.splitext(self.movie_path)[0] + '_output.yml'
+        else:
+            return None
+
 
 
 if __name__ == "__main__":

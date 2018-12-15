@@ -264,7 +264,7 @@
      </rect>
     </property>
    </widget>
-   <widget class="QSlider" name="FrameSlider">
+   <widget class="QSlider" name="horizontalSlider_currentFrame">
     <property name="enabled">
      <bool>false</bool>
     </property>

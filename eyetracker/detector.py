@@ -10,6 +10,8 @@ import matplotlib.pyplot as plt
 DEFAULT_PARA = {'pupil_is_equalize':True,
                 'led_roi':(200, 300, 280, 400),
                 'pupil_roi':(100, 350, 200, 500),
+                # 'led_roi': None,
+                # 'pupil_roi': None,
                 'led_binary_threshold':200,
                 'pupil_binary_threshold':240,
                 'led_blur':2,
@@ -644,7 +646,7 @@ class PupilLedDetector(object):
         return para_dict
 
     @property
-    def string(self):
+    def param_str(self):
         string = '\nLED:\n' \
                  'led_roi: {}\n' \
                  'led_blur: {}\n' \
@@ -666,6 +668,31 @@ class PupilLedDetector(object):
                                                self.pupil_min_size)
 
         return string
+
+    @property
+    def result_str(self):
+
+        s = ''
+
+        if self.led is not None:
+            s += '\nLED:\n'
+            s += 'center: ({:6.2f}, {:6.2f})\n'.format(self.led.center[0], self.led.center[1])
+            s += 'axes:  ({:6.2f}, {:6.2f}\n'.format(self.led.axes[0], self.led.axes[1])
+            s += 'angle: {:8.2f} deg\n'.format(self.led.angle)
+            s += 'area: {:9.2f}\n'.format(self.led.get_area())
+        else:
+            s += '\nNo LED\n'
+
+        if self.pupil is not None:
+            s +='\nPupil\n'
+            s +='center: ({:6.2f}, {:6.2f})\n'.format(self.pupil.center[0], self.pupil.center[1])
+            s +='axes:  ({:6.2f}, {:6.2f})\n'.format(self.pupil.axes[0], self.pupil.axes[1])
+            s +='angle: {:8.2f} deg\n'.format(self.pupil.angle)
+            s +='area: {:9.2f}\n'.format(self.pupil.get_area())
+        else:
+            s += '\nNo Pupil\n'
+
+        return s
 
 
 

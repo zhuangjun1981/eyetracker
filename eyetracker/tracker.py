@@ -124,7 +124,7 @@ class Eyetracker(object):
             print('did not find config file. load default config.')
             self.detector = dt.PupilLedDetector()
 
-        print(self.detector.string)
+        print(self.detector.param_str)
 
     def process_movie(self):
 
@@ -192,7 +192,7 @@ class Eyetracker(object):
                'frame_number: {}\n' \
                'frame_shape: {}\n'.format(self.input_movie_path, self.frame_num, self.frame_shape)
         data_f.create_dataset('meta', data=meta)
-        data_f.create_dataset('detector_parameters', data=self.detector.string)
+        data_f.create_dataset('detector_parameters', data=self.detector.param_str)
         led_pos_dset = data_f.create_dataset('led_positions', data=self.led_positions)
         led_pos_dset.attrs['unit'] = 'pixel'
         led_pos_dset.attrs['format'] = '[row, col]'
