@@ -190,7 +190,7 @@ class Ui_MainWindow(object):
         self.pushButton_showResult.setGeometry(QtCore.QRect(950, 700, 51, 51))
         self.pushButton_showResult.setText("")
         icon5 = QtGui.QIcon()
-        icon5.addPixmap(QtGui.QPixmap(os.path.join(curr_folder, 'res', "eye.ico")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon5.addPixmap(QtGui.QPixmap(os.path.join(curr_folder, 'res', "zoom.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.pushButton_showResult.setIcon(icon5)
         self.pushButton_showResult.setIconSize(QtCore.QSize(32, 32))
         self.pushButton_showResult.setObjectName("pushButton_showResult")

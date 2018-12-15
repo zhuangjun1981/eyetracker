@@ -127,7 +127,7 @@ class EyetrackerGui(QtWidgets.QMainWindow):
 
     def _show_movie_info(self):
 
-        self.ui.label_moviePathValue.setText(str(os.path.realpath(self.movie_path)))
+        self.ui.label_moviePathValue.setText(str(self.movie_path))
         self.ui.label_movieFrameNumberValue.setText(str(self.movie_frame_num))
         self.ui.label_movieFrameShapeValue.setText(str(self.movie_frame_shape))
 
