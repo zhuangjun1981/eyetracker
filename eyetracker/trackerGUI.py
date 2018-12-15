@@ -43,12 +43,12 @@ class EyetrackerGui(QtWidgets.QMainWindow):
         self.ui.lineEdit_pupilMinSize.textChanged.connect(self._update_parameters)
 
         self.ui.pushButton_loadMovie.clicked.connect(self._load_movie)
+        self.ui.pushButton_clear.clicked.connect(self.clear)
 
         # 0: no movie loaded
         # 1: movie loaded and paused
         # 2: movie loaded and running
         # self.status = 0
-
 
     def clear(self):
 
@@ -106,6 +106,7 @@ class EyetrackerGui(QtWidgets.QMainWindow):
         # set buttons
         self.ui.pushButton_pauseplay.setIcon(QtGui.QIcon(os.path.join(PACKAGE_DIR, "res", "play.png")))
         self.ui.pushButton_pauseplay.setEnabled(False)
+        self.ui.pushButton_refresh.setEnabled(False)
         self.ui.pushButton_showResult.setEnabled(False)
         self.ui.pushButton_process.setEnabled(False)
 
@@ -202,6 +203,7 @@ class EyetrackerGui(QtWidgets.QMainWindow):
             # set buttons
             self.ui.pushButton_pauseplay.setEnabled(True)
             self.ui.pushButton_pauseplay.setIcon(QtGui.QIcon(os.path.join(PACKAGE_DIR, "res", "play.png")))
+            self.ui.pushButton_refresh.setEnabled(True)
             self.ui.pushButton_showResult.setEnabled(True)
             self.ui.pushButton_process.setEnabled(True)
 
@@ -299,7 +301,6 @@ class EyetrackerGui(QtWidgets.QMainWindow):
             return os.path.splitext(self.movie_path)[0] + '_output.yml'
         else:
             return None
-
 
 
 if __name__ == "__main__":
