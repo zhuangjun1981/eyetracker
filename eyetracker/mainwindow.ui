@@ -449,7 +449,7 @@
     </property>
     <property name="icon">
      <iconset>
-      <normaloff>res/eye.ico</normaloff>res/eye.ico</iconset>
+      <normaloff>res/zoom.png</normaloff>res/zoom.png</iconset>
     </property>
     <property name="iconSize">
      <size>
