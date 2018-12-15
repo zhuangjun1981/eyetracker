@@ -52,27 +52,39 @@ class EyetrackerGui(QtWidgets.QMainWindow):
 
     def clear(self):
 
-        # setup pupil and led rois
-        self.pupil_roi = pg.ROI([20, 20], [60, 60],
-                                pen=(0, 255, 0),
-                                removable=False)
-        self.pupil_roi.addScaleHandle([0, 0.5], [0.5, 0.5])
-        self.pupil_roi.addScaleHandle([1, 0.5], [0.5, 0.5])
-        self.pupil_roi.addScaleHandle([0.5, 0], [0.5, 0.5])
-        self.pupil_roi.addScaleHandle([0.5, 1], [0.5, 0.5])
-        self.movie_view.addItem(self.pupil_roi)
-
-        self.led_roi = pg.ROI([40, 40], [20, 20],
-                              pen=(255, 0, 0),
-                              removable=False)
-        self.led_roi.addScaleHandle([0, 0.5], [0.5, 0.5])
-        self.led_roi.addScaleHandle([1, 0.5], [0.5, 0.5])
-        self.led_roi.addScaleHandle([0.5, 0], [0.5, 0.5])
-        self.led_roi.addScaleHandle([0.5, 1], [0.5, 0.5])
-        self.movie_view.addItem(self.led_roi)
-
         # set back image
         self.movie.setImage(np.zeros((100, 100), dtype=np.uint8))
+
+        # setup pupil and led rois
+        if hasattr(self, 'pupil_roi'):
+            self.pupil_roi.setPos((20, 20))
+            self.pupil_roi.setSize((60, 60))
+            self.pupil_roi.setPen((0, 255, 0))
+            self.pupil_roi.removable = False
+        else:
+            self.pupil_roi = pg.ROI([20, 20], [60, 60],
+                                    pen=(0, 255, 0),
+                                    removable=False)
+            self.pupil_roi.addScaleHandle([0, 0.5], [0.5, 0.5])
+            self.pupil_roi.addScaleHandle([1, 0.5], [0.5, 0.5])
+            self.pupil_roi.addScaleHandle([0.5, 0], [0.5, 0.5])
+            self.pupil_roi.addScaleHandle([0.5, 1], [0.5, 0.5])
+            self.movie_view.addItem(self.pupil_roi)
+
+        if hasattr(self, 'led_roi'):
+            self.led_roi.setPos((40, 40))
+            self.led_roi.setSize((20, 20))
+            self.led_roi.setPen((255, 0, 0))
+            self.led_roi.removable = False
+        else:
+            self.led_roi = pg.ROI([40, 40], [20, 20],
+                                  pen=(255, 0, 0),
+                                  removable=False)
+            self.led_roi.addScaleHandle([0, 0.5], [0.5, 0.5])
+            self.led_roi.addScaleHandle([1, 0.5], [0.5, 0.5])
+            self.led_roi.addScaleHandle([0.5, 0], [0.5, 0.5])
+            self.led_roi.addScaleHandle([0.5, 1], [0.5, 0.5])
+            self.movie_view.addItem(self.led_roi)
 
         # setup movie properties
         self.video_capture = None
@@ -101,6 +113,9 @@ class EyetrackerGui(QtWidgets.QMainWindow):
         self.detector = dt.PupilLedDetector(led_roi=self._qt_roi_2_detector_roi(self.led_roi),
                                             pupil_roi=self._qt_roi_2_detector_roi(self.pupil_roi))
         self._show_detector_parameters()
+
+        # remove result
+        self.ui.textBrowser_results.setText('')
 
         self.status = 0
 
@@ -155,15 +170,17 @@ class EyetrackerGui(QtWidgets.QMainWindow):
         else:
             last_dir = os.path.join(PACKAGE_DIR, 'tests', 'test_files')
 
-        self.movie_path = QtWidgets.QFileDialog.getOpenFileName(self, caption="select a input .avi movie file",
-                                                                    directory=last_dir,
-                                                                    filter='*.avi')
-        self.movie_path = os.path.realpath(self.movie_path[0])
 
-        # load movie
-        self.video_capture = cv2.VideoCapture(self.movie_path)
-        self.movie_frame_num = int(self.video_capture.get(cv2.CAP_PROP_FRAME_COUNT))
-        if self.movie_frame_num > 0:
+        movie_path = QtWidgets.QFileDialog.getOpenFileName(self, caption="select a input .avi movie file",
+                                                                    directory=last_dir,
+                                                                    filter='*.avi')[0]
+        video_capture = cv2.VideoCapture(movie_path)
+        frame_num = int(video_capture.get(cv2.CAP_PROP_FRAME_COUNT))
+
+        if frame_num > 0:
+            self.movie_path = os.path.realpath(movie_path)
+            self.video_capture = video_capture
+            self.movie_frame_num = frame_num
             self.movie_frame_shape = (int(self.video_capture.get(cv2.CAP_PROP_FRAME_HEIGHT)),
                                       int(self.video_capture.get(cv2.CAP_PROP_FRAME_WIDTH)))
 
@@ -204,7 +221,6 @@ class EyetrackerGui(QtWidgets.QMainWindow):
 
         else: # no frame in the movie
             print('\nno frame in the selected movie file: \n{}'.format(self.movie_path))
-            self.clear()
             return
 
     def _playpause_clicked(self):
