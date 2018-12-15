@@ -617,7 +617,7 @@ class PupilLedDetector(object):
 
         ax11 = f.add_subplot(3, 4, 11)
         if self.pupil_openclosed is not None:
-            ax11.imshow(self.pupil_openclosed, vmin=0, vmax=255, cmap='gray')
+            ax11.imshow(self.pupil_openclosed, vmin=0, vmax=1, cmap='gray')
         ax11.set_axis_off()
         ax11.set_title('pupil openclosed')
 

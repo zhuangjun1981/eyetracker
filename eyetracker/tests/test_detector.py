@@ -69,6 +69,7 @@ class TestImageProcessor(unittest.TestCase):
                                   pupil_roi=(100, 350, 200, 500),
                                   led_binary_threshold=200,
                                   led_openclose_iter=1,
+                                  led_mask_dilation=20,
                                   pupil_binary_threshold=240,
                                   pupil_openclose_iter=10,
                                   pupil_min_size=500)
