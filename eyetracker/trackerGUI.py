@@ -120,6 +120,7 @@ class EyetrackerGui(QtWidgets.QMainWindow):
         # set buttons
         self.ui.pushButton_pauseplay.setIcon(QtGui.QIcon(os.path.join(PACKAGE_DIR, "res", "play.png")))
         self.ui.pushButton_pauseplay.setEnabled(False)
+        self.ui.pushButton_saveConfig.setEnabled(False)
         self.ui.pushButton_showResult.setEnabled(False)
         self.ui.pushButton_process.setEnabled(False)
 
@@ -214,7 +215,7 @@ class EyetrackerGui(QtWidgets.QMainWindow):
 
     def _load_config_clicked(self):
 
-        if os.path.isfile(self.config_path):
+        if (self.config_path is not None) and (os.path.isfile(self.config_path)):
             print('\nloading existing config file: \n{}'.format(self.config_path))
             with open(self.config_path, 'r') as config_f:
                 param_dict = yaml.load(config_f)
@@ -252,7 +253,16 @@ class EyetrackerGui(QtWidgets.QMainWindow):
         self._show_detector_parameters()
 
     def _save_config_clicked(self):
-        pass
+        if self.status == 0:
+            print('no movie loaded. Can not save config file.')
+        else:
+            if (self.config_path is not None) and (os.path.isfile(self.config_path)):
+                print('Overwriting existing config file: \n{}'.format(self.config_path))
+                os.remove(self.config_path)
+
+            self._update_parameters()
+            with open(self.config_path, 'w') as config_f:
+                yaml.dump(self.detector.get_parameter_dict(), config_f)
 
     def _show_result_clicked(self):
         self.detector.show_results()
@@ -333,6 +343,7 @@ class EyetrackerGui(QtWidgets.QMainWindow):
             # set buttons
             self.ui.pushButton_pauseplay.setEnabled(True)
             self.ui.pushButton_pauseplay.setIcon(QtGui.QIcon(os.path.join(PACKAGE_DIR, "res", "play.png")))
+            self.ui.pushButton_saveConfig.setEnabled(True)
             self.ui.pushButton_showResult.setEnabled(True)
             self.ui.pushButton_process.setEnabled(True)
 
