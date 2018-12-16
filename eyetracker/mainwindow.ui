@@ -259,7 +259,7 @@
      <rect>
       <x>10</x>
       <y>710</y>
-      <width>561</width>
+      <width>621</width>
       <height>31</height>
      </rect>
     </property>
@@ -279,7 +279,7 @@
     </property>
     <property name="geometry">
      <rect>
-      <x>710</x>
+      <x>770</x>
       <y>700</y>
       <width>50</width>
       <height>50</height>
@@ -314,7 +314,7 @@
    <widget class="QPushButton" name="pushButton_saveConfig">
     <property name="geometry">
      <rect>
-      <x>830</x>
+      <x>890</x>
       <y>700</y>
       <width>50</width>
       <height>50</height>
@@ -349,7 +349,7 @@
    <widget class="QPushButton" name="pushButton_loadConfig">
     <property name="geometry">
      <rect>
-      <x>770</x>
+      <x>830</x>
       <y>700</y>
       <width>50</width>
       <height>50</height>
@@ -560,7 +560,7 @@
     </property>
     <property name="geometry">
      <rect>
-      <x>580</x>
+      <x>640</x>
       <y>699</y>
       <width>121</width>
       <height>51</height>
@@ -634,29 +634,6 @@
     </property>
     <property name="text">
      <string>CLEAR</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="pushButton_refresh">
-    <property name="geometry">
-     <rect>
-      <x>890</x>
-      <y>700</y>
-      <width>51</width>
-      <height>51</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
-    <property name="icon">
-     <iconset>
-      <normaloff>res/refresh.png</normaloff>res/refresh.png</iconset>
-    </property>
-    <property name="iconSize">
-     <size>
-      <width>32</width>
-      <height>32</height>
-     </size>
     </property>
    </widget>
    <widget class="GraphicsLayoutWidget" name="graphicsView_movieView">

@@ -73,7 +73,7 @@ class TestImageProcessor(unittest.TestCase):
                                   pupil_binary_threshold=240,
                                   pupil_openclose_iter=10,
                                   pupil_min_size=500)
-        det.load_first_frame(frame=img)
+        det.load_frame(frame=img, is_clear_history=True)
         det.detect()
         det.show_results()
         import matplotlib.pyplot as plt
@@ -90,7 +90,7 @@ class TestImageProcessor(unittest.TestCase):
                                   pupil_min_size=500,
                                   led_mask_dilation=20,
                                   pupil_is_equalize=False)
-        det.load_first_frame(frame=img)
+        det.load_frame(frame=img, is_clear_history=True)
         det.detect()
         det.show_results()
         import matplotlib.pyplot as plt

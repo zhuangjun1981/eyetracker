@@ -521,7 +521,7 @@ class PupilLedDetector(object):
 
     def show_results(self):
 
-        f = plt.figure(figsize=(12, 9), tight_layout=True)
+        f = plt.figure(figsize=(9, 6))
 
         ax1 = f.add_subplot(3, 4, 1)
         if self.original is not None:
@@ -555,7 +555,7 @@ class PupilLedDetector(object):
         ax3.set_axis_off()
         if self.led is not None:
             ax3.text(x=0.2, y=0.8, s='LED', horizontalalignment='left', verticalalignment='center')
-            ax3.text(x=0.2, y=0.7, s='center: ({:6.2f}, {:6.2f})'.format(self.led.center[0], self.led.center[1]),
+            ax3.text(x=0.2, y=0.7, s='center: ({:4d}, {:4d})'.format(self.led.center[0], self.led.center[1]),
                      horizontalalignment='left', verticalalignment='center')
             ax3.text(x=0.2, y=0.6, s='axes:  ({:6.2f}, {:6.2f})'.format(self.led.axes[0], self.led.axes[1]),
                      horizontalalignment='left', verticalalignment='center')
@@ -570,7 +570,7 @@ class PupilLedDetector(object):
         ax4.set_axis_off()
         if self.pupil is not None:
             ax4.text(x=0.2, y=0.8, s='Pupil', horizontalalignment='left', verticalalignment='center')
-            ax4.text(x=0.2, y=0.7, s='center: ({:6.2f}, {:6.2f})'.format(self.pupil.center[0], self.pupil.center[1]),
+            ax4.text(x=0.2, y=0.7, s='center: ({:4d}, {:4d})'.format(self.pupil.center[0], self.pupil.center[1]),
                      horizontalalignment='left', verticalalignment='center')
             ax4.text(x=0.2, y=0.6, s='axes:  ({:6.2f}, {:6.2f})'.format(self.pupil.axes[0], self.pupil.axes[1]),
                      horizontalalignment='left', verticalalignment='center')
@@ -630,6 +630,8 @@ class PupilLedDetector(object):
         ax12.set_axis_off()
         ax12.set_title('pupil contoured')
 
+        f.tight_layout(pad=-0.5, h_pad=-2.5, w_pad=-4.)
+
     def get_parameter_dict(self):
 
         para_dict = {'pupil_is_equalize': self.pupil_is_equalize,
@@ -680,7 +682,7 @@ class PupilLedDetector(object):
         if self.led is not None:
             s += '\nLED:\n'
             s += 'center: ({:6.2f}, {:6.2f})\n'.format(self.led.center[0], self.led.center[1])
-            s += 'axes:  ({:6.2f}, {:6.2f}\n'.format(self.led.axes[0], self.led.axes[1])
+            s += 'axes:  ({:6.2f}, {:6.2f})\n'.format(self.led.axes[0], self.led.axes[1])
             s += 'angle: {:8.2f} deg\n'.format(self.led.angle)
             s += 'area: {:9.2f}\n'.format(self.led.get_area())
         else:
