@@ -20,7 +20,7 @@ class EyetrackerGui(QtWidgets.QMainWindow):
         self.ui.setupUi(self)
 
         # setup_graphics
-        self.movie_view = self.ui.graphicsView_img.addViewBox()
+        self.movie_view = self.ui.graphicsView_movieView.addViewBox()
         self.movie_view.setAspectLocked(True)
         self.movie_view.enableAutoRange(True)
         self.movie = pg.ImageItem()
@@ -274,13 +274,13 @@ class EyetrackerGui(QtWidgets.QMainWindow):
             # change status
             self.status = 2
 
-            # while self.curr_frame_num < self.movie_frame_num:
-            #     self._show_one_frame(self.curr_frame_num)
-            #     self.curr_frame_num = self.curr_frame_num + 1
-            #     print(self.curr_frame_num)
-            #     time.sleep(frame_dur)
+            while self.curr_frame_num < self.movie_frame_num:
+                self._show_one_frame(self.curr_frame_num)
+                self.curr_frame_num = self.curr_frame_num + 1
+                print(self.curr_frame_num)
+                time.sleep(frame_dur)
 
-            # self._pause_movie()
+            self._pause_movie()
 
         else:
             print('do not understand internal status ({}). Do nothing.'.format(self.status))

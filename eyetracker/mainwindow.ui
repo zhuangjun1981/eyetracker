@@ -251,19 +251,6 @@
      </item>
     </layout>
    </widget>
-   <widget class="GraphicsLayoutWidget" name="graphicsView_img">
-    <property name="enabled">
-     <bool>true</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>100</y>
-      <width>801</width>
-      <height>591</height>
-     </rect>
-    </property>
-   </widget>
    <widget class="QSlider" name="horizontalSlider_currentFrame">
     <property name="enabled">
      <bool>false</bool>
@@ -670,6 +657,16 @@
       <width>32</width>
       <height>32</height>
      </size>
+    </property>
+   </widget>
+   <widget class="GraphicsLayoutWidget" name="graphicsView_movieView">
+    <property name="geometry">
+     <rect>
+      <x>15</x>
+      <y>101</y>
+      <width>791</width>
+      <height>591</height>
+     </rect>
     </property>
    </widget>
   </widget>
