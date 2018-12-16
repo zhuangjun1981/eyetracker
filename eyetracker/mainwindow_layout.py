@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1066, 776)
+        MainWindow.resize(1071, 776)
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap("res/eye.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         MainWindow.setWindowIcon(icon)
@@ -263,7 +263,7 @@ class Ui_MainWindow(object):
         self.pushButton_refresh.setObjectName("pushButton_refresh")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1066, 21))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 1071, 21))
         self.menubar.setObjectName("menubar")
         MainWindow.setMenuBar(self.menubar)
         self.actionQuit = QtWidgets.QAction(MainWindow)

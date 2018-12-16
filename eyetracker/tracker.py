@@ -142,9 +142,9 @@ class Eyetracker(object):
             _, curr_frame = self.input_movie.read()
 
             if frame_i == 0:
-                self.detector.load_first_frame(frame=curr_frame)
+                self.detector.load_frame(frame=curr_frame, is_clear_history=True)
             else:
-                self.detector.load_next_frame(frame=curr_frame)
+                self.detector.load_frame(frame=curr_frame, is_clear_history=False)
 
             self.detector.detect()
 

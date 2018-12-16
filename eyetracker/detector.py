@@ -318,21 +318,24 @@ class PupilLedDetector(object):
 
         self.clear()
 
-    def load_next_frame(self, frame):
+    def load_frame(self, frame, is_clear_history=False):
         """
         load next frame, keep processing history
         :return:
         """
-        self.last_led = self.led
-        self.last_pupil = self.pupil
+
+        if is_clear_history:
+            self.clear_history()
+        else:
+            self.last_led = self.led
+            self.last_pupil = self.pupil
         self.clear()
         self.original = frame
         self.annotated = np.array(frame)
 
-    def load_first_frame(self, frame):
-        self.clear_all()
-        self.original = frame
-        self.annotated = np.array(frame)
+    def clear_history(self):
+        self.last_led = None
+        self.last_pupil = None
 
     def _find_led(self):
 
