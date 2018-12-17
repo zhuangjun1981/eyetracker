@@ -17,6 +17,7 @@ import cv2
 import eyetracker.detector as dt
 import yaml
 import h5py
+import argparse
 
 FOURCC = 'XVID'
 FPS = 30
@@ -112,11 +113,14 @@ class Eyetracker(object):
             self.input_movie.release()
             self.clear()
 
-    def load_cfg(self):
+    def load_cfg(self, config_file_path=None):
 
-        if os.path.isfile(self._cfg_file_path):
+        if config_file_path is None:
+            config_file_path = self._cfg_file_path
+
+        if os.path.isfile(config_file_path):
             print('load existing config file.')
-            with open(self._cfg_file_path, 'r') as cfg_f:
+            with open(config_file_path, 'r') as cfg_f:
                 params = yaml.load(cfg_f)
             self.detector = dt.PupilLedDetector()
             self.detector.load_parameters(**params)
@@ -135,8 +139,8 @@ class Eyetracker(object):
             # if frame_i % (self.frame_num / 10) == 0:
             if frame_i % (self.frame_num / 100) == 0:
                 time_used_min = (time.time() - time0) / 60.
-                print('{:08.2f} minutes: {:02d}% of movie processed.'.
-                      format(time_used_min, int(100 * frame_i / self.frame_num)))
+                print('{:08.2f} min: frame processed: {:d}, {:02d}%.'.
+                      format(time_used_min, frame_i, int(100 * frame_i / self.frame_num)))
 
             self.input_movie.set(cv2.CAP_PROP_POS_FRAMES, frame_i)
             _, curr_frame = self.input_movie.read()
@@ -229,3 +233,47 @@ class Eyetracker(object):
             return os.path.splitext(self.input_movie_path)[0] + '_output.avi'
         else:
             return None
+
+def main():
+    try:
+        parser = argparse.ArgumentParser(
+            description='Tracks eye and pupil position in image.')
+        parser.add_argument('infile',
+                            nargs='?',
+                            type=str)
+        parser.add_argument('-c',
+                            type=str,
+                            help='Config file path.',
+                            default="")
+        args = parser.parse_args()
+        args = vars(args)
+
+        # print(args)
+
+        if args['infile']:
+            infile = os.path.realpath(args['infile'])
+            in_fn, in_ext = os.path.splitext(infile)
+
+            in_ext = in_ext.lower()
+            if in_ext != '.avi':
+                raise IOError('input movie should be a .avi file.')
+
+            if args['c']:
+                cfgfile = os.path.realpath(args['c'])
+                _, cfg_ext = os.path.splitext(cfgfile)
+                cfg_ext = cfg_ext.lower()
+                if cfg_ext != '.yml':
+                    raise IOError('config file should be a .yml file.')
+            else:
+                cfgfile = in_fn + '_output.yml'
+
+            et = Eyetracker()
+            et.load_file(input_movie_path=infile)
+            et.load_cfg(config_file_path=cfgfile)
+            et.process_movie()
+    except Exception as e:
+        print(type(e), e)
+        input("Processing completed with errors. Press enter to close...")
+
+if __name__ == '__main__':
+    main()
