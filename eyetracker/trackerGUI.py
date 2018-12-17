@@ -279,6 +279,7 @@ class EyetrackerGui(QtWidgets.QMainWindow):
         plt.show()
 
     def _process_clicked(self):
+        # todo: finish this
         pass
 
     def _update_parameters(self):
