@@ -26,6 +26,7 @@ class EyetrackerGui(QtWidgets.QMainWindow):
         self.movie_view.enableAutoRange(True)
         self.movie = pg.ImageItem()
         self.movie_view.addItem(self.movie)
+        self.movie_timer = QtCore.QTimer(self.movie)
 
 
         self.clear()
@@ -56,12 +57,17 @@ class EyetrackerGui(QtWidgets.QMainWindow):
         self.ui.pushButton_showResult.clicked.connect(self._show_result_clicked)
         self.ui.pushButton_process.clicked.connect(self._process_clicked)
 
+        self.movie_timer.timeout.connect(self._show_next_frame)
+
         # 0: no movie loaded
         # 1: movie loaded and paused
         # 2: movie loaded and running
         # self.status = 0
 
     def clear(self):
+
+        if hasattr(self, 'status') and self.status == 2: # if movie is playing
+            self._pause_movie()
 
         # set slider
         self.ui.horizontalSlider_currentFrame.setRange(0, 1)
@@ -114,7 +120,8 @@ class EyetrackerGui(QtWidgets.QMainWindow):
         self.movie_path = None
         self.movie_frame_num = 0
         self.movie_frame_shape = (100, 100) # (height, width)
-        self.curr_frame_num = None
+        self.movie_fps = None
+        self.curr_frame_ind = None
         self._show_movie_info()
 
         # set buttons
@@ -143,44 +150,47 @@ class EyetrackerGui(QtWidgets.QMainWindow):
 
 
         movie_path = QtWidgets.QFileDialog.getOpenFileName(self, caption="select a input .avi movie file",
-                                                                    directory=last_dir,
-                                                                    filter='*.avi')[0]
-        video_capture = cv2.VideoCapture(movie_path)
-        frame_num = int(video_capture.get(cv2.CAP_PROP_FRAME_COUNT))
+                                                           directory=last_dir,
+                                                           filter='*.avi')[0]
 
-        if frame_num > 0:
-            self.movie_path = os.path.realpath(movie_path)
-            self.video_capture = video_capture
-            self.movie_frame_num = frame_num
-            self.movie_frame_shape = (int(self.video_capture.get(cv2.CAP_PROP_FRAME_HEIGHT)),
-                                      int(self.video_capture.get(cv2.CAP_PROP_FRAME_WIDTH)))
+        if movie_path:
 
-            self.ui.horizontalSlider_currentFrame.setRange(0, self.movie_frame_num - 1)
+            video_capture = cv2.VideoCapture(movie_path)
+            frame_num = int(video_capture.get(cv2.CAP_PROP_FRAME_COUNT))
 
-            # display info
-            self._show_movie_info()
+            if frame_num > 0:
+                self.movie_path = os.path.realpath(movie_path)
+                self.video_capture = video_capture
+                self.movie_frame_num = frame_num
+                self.movie_frame_shape = (int(self.video_capture.get(cv2.CAP_PROP_FRAME_HEIGHT)),
+                                          int(self.video_capture.get(cv2.CAP_PROP_FRAME_WIDTH)))
+                self.movie_fps = self.video_capture.get(cv2.CAP_PROP_FPS)
 
-            # try to load config file
-            self._load_config_clicked()
+                self.ui.horizontalSlider_currentFrame.setRange(0, self.movie_frame_num - 1)
 
-            # set up status
-            self.status = 1
-            self._pause_movie()
+                # display info
+                self._show_movie_info()
 
-            # display frame
-            self.curr_frame_num = 0
-            self._show_one_frame(frame_ind=self.curr_frame_num, is_clear_history=True)
+                # try to load config file
+                self._load_config_clicked()
 
-        else: # no frame in the movie
-            print('\nno frame in the selected movie file: \n{}'.format(self.movie_path))
-            return
+                # set up status
+                self.status = 1
+                self._pause_movie()
+
+                # display frame
+                self.curr_frame_ind = 0
+                self._show_one_frame(frame_ind=self.curr_frame_ind, is_clear_history=True)
+
+            else: # no frame in the movie
+                print('\nno frame in the selected movie file: \n{}'.format(self.movie_path))
 
     def _slider_value_changed(self):
 
         # print('slider bar value changed')
 
-        self.curr_frame_num = int(self.ui.horizontalSlider_currentFrame.value())
-        self._show_one_frame(frame_ind=self.curr_frame_num, is_clear_history=True)
+        self.curr_frame_ind = int(self.ui.horizontalSlider_currentFrame.value())
+        self._show_one_frame(frame_ind=self.curr_frame_ind, is_clear_history=True)
 
     def _frame_ind_specified(self):
 
@@ -189,7 +199,7 @@ class EyetrackerGui(QtWidgets.QMainWindow):
         try:
             frame_i = int(self.ui.lineEdit_currframeNum.text())
         except ValueError:
-            frame_i = self.curr_frame_num
+            frame_i = self.curr_frame_ind
             print('input frame number should be a unsigned integer.')
 
         if frame_i < 0:
@@ -198,9 +208,9 @@ class EyetrackerGui(QtWidgets.QMainWindow):
             print('input frame index ({}) should be less than total frame number ({}).'
                   .format(frame_i, self.movie_frame_num))
         else:
-            self.curr_frame_num = frame_i
+            self.curr_frame_ind = frame_i
 
-        self._show_one_frame(frame_ind=self.curr_frame_num, is_clear_history=True)
+        self._show_one_frame(frame_ind=self.curr_frame_ind, is_clear_history=True)
 
     def _playpause_clicked(self):
 
@@ -293,9 +303,9 @@ class EyetrackerGui(QtWidgets.QMainWindow):
         self._show_detector_parameters()
 
         if self.status == 1:
-            self._show_one_frame(frame_ind=self.curr_frame_num, is_clear_history=True)
+            self._show_one_frame(frame_ind=self.curr_frame_ind, is_clear_history=True)
 
-    def _play_movie(self, frame_dur=0.033):
+    def _play_movie(self):
 
         if self.status == 0:
             print('no movie loaded. Cannot play movie.')
@@ -318,13 +328,7 @@ class EyetrackerGui(QtWidgets.QMainWindow):
             # change status
             self.status = 2
 
-            while self.curr_frame_num < self.movie_frame_num:
-                self._show_one_frame(self.curr_frame_num, is_clear_history=False)
-                self.curr_frame_num = self.curr_frame_num + 1
-                print('Playing movie. Current frame index: {}'.format(self.curr_frame_num))
-                time.sleep(frame_dur)
-
-            self._pause_movie()
+            self.movie_timer.start(int(1 / self.movie_fps))
 
         else:
             print('do not understand internal status ({}). Do nothing.'.format(self.status))
@@ -334,6 +338,9 @@ class EyetrackerGui(QtWidgets.QMainWindow):
         if self.status == 0:
             print('no movie loaded. Cannot pause movie.')
         else:
+
+            self.movie_timer.stop()
+
             # set frame slider
             self.ui.horizontalSlider_currentFrame.setEnabled(True)
 
@@ -350,9 +357,12 @@ class EyetrackerGui(QtWidgets.QMainWindow):
             # change status
             self.status = 1
 
-    def _show_one_frame(self, frame_ind, is_clear_history=False):
+    def _show_one_frame(self, frame_ind=None, is_clear_history=False):
 
         # print('showing one frame')
+
+        if frame_ind is None:
+            frame_ind = self.curr_frame_ind
 
         if self.status == 0:
             print('No movie loaded. Cannot show frame.')
@@ -373,6 +383,11 @@ class EyetrackerGui(QtWidgets.QMainWindow):
 
             # show result text
             self.ui.textBrowser_results.setText(self.detector.result_str)
+
+    def _show_next_frame(self):
+
+        self.curr_frame_ind = (self.curr_frame_ind + 1) % self.movie_frame_num
+        self._show_one_frame(frame_ind=self.curr_frame_ind, is_clear_history=False)
 
     def _qt_roi_2_detector_roi(self, qt_roi):
 

@@ -680,7 +680,7 @@ class PupilLedDetector(object):
         s = ''
 
         if self.led is not None:
-            s += '\nLED:\n'
+            s += 'LED:\n'
             s += 'center: ({:6.2f}, {:6.2f})\n'.format(self.led.center[0], self.led.center[1])
             s += 'axes:  ({:6.2f}, {:6.2f})\n'.format(self.led.axes[0], self.led.axes[1])
             s += 'angle: {:8.2f} deg\n'.format(self.led.angle)
