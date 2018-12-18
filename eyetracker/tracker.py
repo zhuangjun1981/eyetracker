@@ -138,9 +138,13 @@ class Eyetracker(object):
 
             # if frame_i % (self.frame_num / 10) == 0:
             if frame_i % (self.frame_num / 100) == 0:
-                time_used_min = (time.time() - time0) / 60.
-                print('{:08.2f} min: frame processed: {:d}, {:02d}%.'.
-                      format(time_used_min, frame_i, int(100 * frame_i / self.frame_num)))
+                time_used_sec = time.time() - time0
+                print('{:08.2f} min: frame processed: {:d}, {:02d}%. fps: {:7.2f}'.
+                      format(time_used_sec / 60.,
+                             frame_i,
+                             int(100 * frame_i / self.frame_num),
+                             frame_i / (time_used_sec + 1))
+                      )
 
             self.input_movie.set(cv2.CAP_PROP_POS_FRAMES, frame_i)
             _, curr_frame = self.input_movie.read()

@@ -7,7 +7,6 @@ import eyetracker.mainwindow_layout as mwl
 from PyQt5 import QtCore, QtGui, QtWidgets
 import pyqtgraph as pg
 import yaml
-import time
 import matplotlib.pyplot as plt
 
 PACKAGE_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -229,7 +228,6 @@ class EyetrackerGui(QtWidgets.QMainWindow):
             print('\nloading existing config file: \n{}'.format(self.config_path))
             with open(self.config_path, 'r') as config_f:
                 param_dict = yaml.load(config_f)
-                print(param_dict)
         else:
             print('\ncannnot find existing config file. load the default detector parameters.')
             detector = dt.PupilLedDetector()
@@ -261,6 +259,7 @@ class EyetrackerGui(QtWidgets.QMainWindow):
 
         self.detector.load_parameters(**param_dict)
         self._show_detector_parameters()
+        print(self.detector.param_str)
 
     def _save_config_clicked(self):
         if self.status == 0:
