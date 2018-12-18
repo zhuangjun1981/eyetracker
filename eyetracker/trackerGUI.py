@@ -279,8 +279,20 @@ class EyetrackerGui(QtWidgets.QMainWindow):
         plt.show()
 
     def _process_clicked(self):
-        # todo: finish this
-        pass
+
+        if self.status == 0:
+            print('No movie loaded. Cannot process.')
+        else:
+            self._save_config_clicked()
+            python_path = sys.executable
+            tracker_path = os.path.join(PACKAGE_DIR, 'tracker.py')
+            movie_path = self.movie_path
+            config_path = self.config_path
+            cmd = "start {} {} {} -c {}".format(python_path,
+                                                tracker_path,
+                                                movie_path,
+                                                config_path)
+            os.system(cmd)
 
     def _update_parameters(self):
 
