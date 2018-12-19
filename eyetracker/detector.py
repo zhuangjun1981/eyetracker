@@ -167,6 +167,11 @@ class Ellipse(object):
                                  endAngle=ell_cv2[4], color=color, thickness=thickness)
         return img_marked
 
+    def copy(self):
+        return Ellipse(center=self.center,
+                       axes=self.axes,
+                       angle=self.angle)
+
     @staticmethod
     def from_cv2_box(box):
         """
@@ -327,8 +332,8 @@ class PupilLedDetector(object):
         if is_clear_history:
             self.clear_history()
         else:
-            self.last_led = self.led
-            self.last_pupil = self.pupil
+            self.last_led = self.led.copy()
+            self.last_pupil = self.pupil.copy()
         self.clear()
         self.original = frame
         self.annotated = np.array(frame)
@@ -492,6 +497,7 @@ class PupilLedDetector(object):
                     return None, None
                 else:
                     if self.last_pupil: # there is last pupil pick the closest one
+                        last_local_pupil = self.last_pupil.into_roi(self.pupil_roi)
                         dises = [dist2d(ell.center, self.last_pupil.center) for ell in ells_area]
                         return ells_area[int(np.argmin(dises))], cons_area
                     else: # no last pupil information pick the roundest one
