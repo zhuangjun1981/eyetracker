@@ -167,10 +167,10 @@ class Ellipse(object):
                                  endAngle=ell_cv2[4], color=color, thickness=thickness)
         return img_marked
 
-    def copy(self):
-        return Ellipse(center=self.center,
-                       axes=self.axes,
-                       angle=self.angle)
+    # def copy(self):
+    #     return Ellipse(center=self.center,
+    #                    axes=self.axes,
+    #                    angle=self.angle)
 
     @staticmethod
     def from_cv2_box(box):
@@ -332,8 +332,8 @@ class PupilLedDetector(object):
         if is_clear_history:
             self.clear_history()
         else:
-            self.last_led = self.led.copy()
-            self.last_pupil = self.pupil.copy()
+            self.last_led = self.led
+            self.last_pupil = self.pupil
         self.clear()
         self.original = frame
         self.annotated = np.array(frame)
