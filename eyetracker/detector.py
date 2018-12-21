@@ -498,7 +498,7 @@ class PupilLedDetector(object):
                 else:
                     if self.last_pupil: # there is last pupil pick the closest one
                         last_local_pupil = self.last_pupil.into_roi(self.pupil_roi)
-                        dises = [dist2d(ell.center, self.last_pupil.center) for ell in ells_area]
+                        dises = [dist2d(ell.center, last_local_pupil.center) for ell in ells_area]
                         return ells_area[int(np.argmin(dises))], cons_area
                     else: # no last pupil information pick the roundest one
                         return ells_area[int(np.argmax(circ_area))], cons_area

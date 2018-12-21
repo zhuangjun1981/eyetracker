@@ -399,6 +399,9 @@ class EyetrackerGui(QtWidgets.QMainWindow):
     def _show_next_frame(self):
 
         self.curr_frame_ind = (self.curr_frame_ind + 1) % self.movie_frame_num
+
+        # print("trackerGUI showing next frame: {}".format(self.curr_frame_ind))
+
         self._show_one_frame(frame_ind=self.curr_frame_ind, is_clear_history=False)
 
     def _qt_roi_2_detector_roi(self, qt_roi):
