@@ -3,6 +3,7 @@ import os
 import cv2
 import numpy as np
 import eyetracker.detector as dt
+import matplotlib.pyplot as plt
 
 class TestImageProcessor(unittest.TestCase):
 
@@ -23,7 +24,6 @@ class TestImageProcessor(unittest.TestCase):
 
         img = cv2.cvtColor(src=mask*255, code=cv2.COLOR_GRAY2BGR)
         img_marked = ell.draw(img=img, color=(0, 255, 0), thickness=1)
-        import matplotlib.pyplot as plt
         plt.imshow(img_marked)
         plt.colorbar()
         plt.show()
@@ -48,7 +48,6 @@ class TestImageProcessor(unittest.TestCase):
         assert (mask_roi[78, 50] == 1)
         assert (mask_roi[50, 78] == 1)
 
-        import matplotlib.pyplot as plt
         f = plt.figure(figsize=(8, 4))
         ax1 = f.add_subplot(1, 2, 1)
         img_marked = ell.draw(img=cv2.cvtColor(mask * 255, cv2.COLOR_GRAY2BGR), color=(0, 255, 0), thickness=2)
@@ -76,7 +75,6 @@ class TestImageProcessor(unittest.TestCase):
         det.load_frame(frame=img, is_clear_history=True)
         det.detect()
         det.show_results()
-        import matplotlib.pyplot as plt
         plt.show()
 
     def test_PupilLedDetector_detect2(self):
@@ -93,7 +91,38 @@ class TestImageProcessor(unittest.TestCase):
         det.load_frame(frame=img, is_clear_history=True)
         det.detect()
         det.show_results()
-        import matplotlib.pyplot as plt
+        plt.show()
+
+    def test_PupilLedDetector_detect3(self):
+
+        cap = cv2.VideoCapture(os.path.join('test_files', 'test2.avi'))
+        cap.set(cv2.CAP_PROP_POS_FRAMES, 35)
+        _, frame0 = cap.read()
+        cap.set(cv2.CAP_PROP_POS_FRAMES, 36)
+        _, frame1 = cap.read()
+
+        det = dt.PupilLedDetector(led_binary_threshold=200,
+                                  led_blur=2,
+                                  led_mask_dilation=5,
+                                  led_max_size=1000.0,
+                                  led_min_size=1.0,
+                                  led_openclose_iter=1,
+                                  led_roi=[213, 281, 226, 317],
+                                  pupil_binary_threshold=230,
+                                  pupil_blur=2,
+                                  pupil_is_equalize=True,
+                                  pupil_min_size=500.0,
+                                  pupil_openclose_iter=10,
+                                  pupil_roi=[149, 331, 155, 397])
+
+        det.load_frame(frame0, is_clear_history=True)
+        det.detect()
+        det.show_results()
+        plt.show()
+
+        det.load_frame(frame1, is_clear_history=False)
+        det.detect()
+        det.show_results()
         plt.show()
 
     def test_temp(self):

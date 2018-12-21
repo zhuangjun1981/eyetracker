@@ -189,7 +189,7 @@ class EyetrackerGui(QtWidgets.QMainWindow):
         # print('slider bar value changed')
 
         self.curr_frame_ind = int(self.ui.horizontalSlider_currentFrame.value())
-        self._show_one_frame(frame_ind=self.curr_frame_ind, is_clear_history=True)
+        self._show_one_frame(frame_ind=self.curr_frame_ind, is_clear_history=False)
 
     def _frame_ind_specified(self):
 
@@ -209,7 +209,7 @@ class EyetrackerGui(QtWidgets.QMainWindow):
         else:
             self.curr_frame_ind = frame_i
 
-        self._show_one_frame(frame_ind=self.curr_frame_ind, is_clear_history=True)
+        self._show_one_frame(frame_ind=self.curr_frame_ind, is_clear_history=False)
 
     def _playpause_clicked(self):
 
@@ -402,7 +402,7 @@ class EyetrackerGui(QtWidgets.QMainWindow):
 
         # print("trackerGUI showing next frame: {}".format(self.curr_frame_ind))
 
-        self._show_one_frame(frame_ind=self.curr_frame_ind, is_clear_history=False)
+        self._show_one_frame(frame_ind=self.curr_frame_ind, is_clear_history=True)
 
     def _qt_roi_2_detector_roi(self, qt_roi):
 

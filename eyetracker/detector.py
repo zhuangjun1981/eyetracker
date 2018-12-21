@@ -167,10 +167,10 @@ class Ellipse(object):
                                  endAngle=ell_cv2[4], color=color, thickness=thickness)
         return img_marked
 
-    # def copy(self):
-    #     return Ellipse(center=self.center,
-    #                    axes=self.axes,
-    #                    angle=self.angle)
+    def copy(self):
+        return Ellipse(center=self.center,
+                       axes=self.axes,
+                       angle=self.angle)
 
     @staticmethod
     def from_cv2_box(box):
@@ -291,13 +291,14 @@ class PupilLedDetector(object):
         """
         clear all frame information, only keep processing parameters
         """
+        self.clear_history()
         self.clear()
 
-        # some stuff we want to track between frames
-        self.last_pupil = None  # ellipse object
-        # self.last_pupil_intensity = None
-        self.last_led = None  # ellipse object
-        # self.last_pupil_velocity = (0, 0) # not used
+        # # some stuff we want to track between frames
+        # self.last_pupil = None  # ellipse object
+        # # self.last_pupil_intensity = None
+        # self.last_led = None  # ellipse object
+        # # self.last_pupil_velocity = (0, 0) # not used
 
     def load_parameters(self, pupil_is_equalize, led_roi, pupil_roi, led_binary_threshold, pupil_binary_threshold,
                         led_blur, pupil_blur, led_openclose_iter, pupil_openclose_iter, led_min_size, pupil_min_size,
@@ -330,11 +331,20 @@ class PupilLedDetector(object):
         """
 
         if is_clear_history:
-            self.clear_history()
+            self.clear_all()
         else:
+            if self.led is None:
+                self.last_led = None
+            else:
+                self.last_led = self.led.copy()
             self.last_led = self.led
-            self.last_pupil = self.pupil
-        self.clear()
+
+            if self.pupil is None:
+                self.last_pupil = None
+            else:
+                self.last_pupil = self.pupil.copy()
+
+            self.clear()
         self.original = frame
         self.annotated = np.array(frame)
 

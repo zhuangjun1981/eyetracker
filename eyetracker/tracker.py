@@ -51,6 +51,7 @@ class Eyetracker(object):
         if input_movie_path is None:
             self.clear()
         elif input_movie_path[-4:] == '.avi':
+            self.input_movie_path=None
             self.load_file(input_movie_path)
         else:
             raise LookupError('input file should be a .avi movie file.')
@@ -130,7 +131,7 @@ class Eyetracker(object):
 
         print(self.detector.param_str)
 
-    def process_movie(self):
+    def process_movie(self, is_with_history=True):
 
         time0 = time.time()
 
@@ -155,7 +156,7 @@ class Eyetracker(object):
             self.input_movie.set(cv2.CAP_PROP_POS_FRAMES, frame_i)
             _, curr_frame = self.input_movie.read()
 
-            if frame_i == 0:
+            if is_with_history and frame_i != 0:
                 self.detector.load_frame(frame=curr_frame, is_clear_history=True)
             else:
                 self.detector.load_frame(frame=curr_frame, is_clear_history=False)
@@ -280,7 +281,7 @@ def main():
             et = Eyetracker()
             et.load_file(input_movie_path=infile)
             et.load_cfg(config_file_path=cfgfile)
-            et.process_movie()
+            et.process_movie(is_with_history=True)
     except Exception as e:
         print(type(e), e)
         input("Processing completed with errors. Press enter to close...")
