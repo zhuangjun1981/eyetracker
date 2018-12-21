@@ -391,6 +391,14 @@ class EyetrackerGui(QtWidgets.QMainWindow):
             _, curr_frame = self.video_capture.read()
             self.detector.load_frame(frame=curr_frame, is_clear_history=is_clear_history)
             self.detector.detect()
+
+            print('\ncurr_frame_id: {}\n'.format(frame_ind))
+            if self.detector.last_pupil is None:
+                print('\tNo last pupil')
+            else:
+                print(type(self.detector.last_pupil))
+                print('\t' + str(self.detector.last_pupil.center))
+
             self._show_image(self.detector.annotated)
 
             # show result text
@@ -402,7 +410,7 @@ class EyetrackerGui(QtWidgets.QMainWindow):
 
         # print("trackerGUI showing next frame: {}".format(self.curr_frame_ind))
 
-        self._show_one_frame(frame_ind=self.curr_frame_ind, is_clear_history=True)
+        self._show_one_frame(frame_ind=self.curr_frame_ind, is_clear_history=False)
 
     def _qt_roi_2_detector_roi(self, qt_roi):
 

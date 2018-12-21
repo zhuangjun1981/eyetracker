@@ -96,9 +96,9 @@ class TestImageProcessor(unittest.TestCase):
     def test_PupilLedDetector_detect3(self):
 
         cap = cv2.VideoCapture(os.path.join('test_files', 'test2.avi'))
-        cap.set(cv2.CAP_PROP_POS_FRAMES, 35)
+        cap.set(cv2.CAP_PROP_POS_FRAMES, 25)
         _, frame0 = cap.read()
-        cap.set(cv2.CAP_PROP_POS_FRAMES, 36)
+        cap.set(cv2.CAP_PROP_POS_FRAMES, 26)
         _, frame1 = cap.read()
 
         det = dt.PupilLedDetector(led_binary_threshold=200,
@@ -107,13 +107,13 @@ class TestImageProcessor(unittest.TestCase):
                                   led_max_size=1000.0,
                                   led_min_size=1.0,
                                   led_openclose_iter=1,
-                                  led_roi=[213, 281, 226, 317],
-                                  pupil_binary_threshold=230,
+                                  led_roi=[209, 293, 224, 321],
+                                  pupil_binary_threshold=240,
                                   pupil_blur=2,
                                   pupil_is_equalize=True,
                                   pupil_min_size=500.0,
                                   pupil_openclose_iter=10,
-                                  pupil_roi=[149, 331, 155, 397])
+                                  pupil_roi=[102, 352, 131, 431])
 
         det.load_frame(frame0, is_clear_history=True)
         det.detect()

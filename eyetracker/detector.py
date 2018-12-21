@@ -172,6 +172,13 @@ class Ellipse(object):
                        axes=self.axes,
                        angle=self.angle)
 
+    def info(self):
+        s = 'center: ({:6.2f}, {:6.2f})\n'.format(self.center[0], self.center[1])
+        s += 'axes:  ({:6.2f}, {:6.2f})\n'.format(self.axes[0], self.axes[1])
+        s += 'angle: {:8.2f} deg\n'.format(self.angle)
+        s += 'area: {:9.2f}\n'.format(self.get_area())
+        return s
+
     @staticmethod
     def from_cv2_box(box):
         """
@@ -336,13 +343,14 @@ class PupilLedDetector(object):
             if self.led is None:
                 self.last_led = None
             else:
-                self.last_led = self.led.copy()
-            self.last_led = self.led
+                # self.last_led = self.led.copy()
+                self.last_led = self.led
 
             if self.pupil is None:
                 self.last_pupil = None
             else:
-                self.last_pupil = self.pupil.copy()
+                # self.last_pupil = self.pupil.copy()
+                self.last_pupil = self.pupil
 
             self.clear()
         self.original = frame
@@ -697,19 +705,13 @@ class PupilLedDetector(object):
 
         if self.led is not None:
             s += 'LED:\n'
-            s += 'center: ({:6.2f}, {:6.2f})\n'.format(self.led.center[0], self.led.center[1])
-            s += 'axes:  ({:6.2f}, {:6.2f})\n'.format(self.led.axes[0], self.led.axes[1])
-            s += 'angle: {:8.2f} deg\n'.format(self.led.angle)
-            s += 'area: {:9.2f}\n'.format(self.led.get_area())
+            s += self.led.info()
         else:
             s += '\nNo LED\n'
 
         if self.pupil is not None:
             s +='\nPupil\n'
-            s +='center: ({:6.2f}, {:6.2f})\n'.format(self.pupil.center[0], self.pupil.center[1])
-            s +='axes:  ({:6.2f}, {:6.2f})\n'.format(self.pupil.axes[0], self.pupil.axes[1])
-            s +='angle: {:8.2f} deg\n'.format(self.pupil.angle)
-            s +='area: {:9.2f}\n'.format(self.pupil.get_area())
+            s += self.pupil.info()
         else:
             s += '\nNo Pupil\n'
 
