@@ -72,7 +72,7 @@ class TestImageProcessor(unittest.TestCase):
                                   pupil_binary_threshold=240,
                                   pupil_openclose_iter=10,
                                   pupil_min_size=500)
-        det.load_frame(frame=img, is_clear_history=True)
+        det.load_frame(frame=img)
         det.detect()
         det.show_results()
         plt.show()
@@ -88,7 +88,7 @@ class TestImageProcessor(unittest.TestCase):
                                   pupil_min_size=500,
                                   led_mask_dilation=20,
                                   pupil_is_equalize=False)
-        det.load_frame(frame=img, is_clear_history=True)
+        det.load_frame(frame=img)
         det.detect()
         det.show_results()
         plt.show()
@@ -96,9 +96,9 @@ class TestImageProcessor(unittest.TestCase):
     def test_PupilLedDetector_detect3(self):
 
         cap = cv2.VideoCapture(os.path.join('test_files', 'test2.avi'))
-        cap.set(cv2.CAP_PROP_POS_FRAMES, 25)
+        cap.set(cv2.CAP_PROP_POS_FRAMES, 35)
         _, frame0 = cap.read()
-        cap.set(cv2.CAP_PROP_POS_FRAMES, 26)
+        cap.set(cv2.CAP_PROP_POS_FRAMES, 36)
         _, frame1 = cap.read()
 
         det = dt.PupilLedDetector(led_binary_threshold=200,
@@ -112,16 +112,20 @@ class TestImageProcessor(unittest.TestCase):
                                   pupil_blur=2,
                                   pupil_is_equalize=True,
                                   pupil_min_size=500.0,
-                                  pupil_openclose_iter=10,
+                                  pupil_openclose_iter=15,
                                   pupil_roi=[102, 352, 131, 431])
 
-        det.load_frame(frame0, is_clear_history=True)
-        det.detect()
+        det.load_frame(frame0)
+        det.detect(last_pupil=None)
+
+        last_pupil = det.pupil
+
+        det.load_frame(frame1)
+        det.detect(last_pupil=None)
         det.show_results()
         plt.show()
 
-        det.load_frame(frame1, is_clear_history=False)
-        det.detect()
+        det.detect(last_pupil=last_pupil)
         det.show_results()
         plt.show()
 

@@ -265,7 +265,7 @@ class PupilLedDetector(object):
                              pupil_min_size=pupil_min_size, led_max_size=led_max_size,
                              led_mask_dilation=led_mask_dilation)
 
-        self.clear_all()
+        self.clear()
 
     def clear(self):
         """
@@ -294,19 +294,6 @@ class PupilLedDetector(object):
         self.led = None # ellipse object in whole frame
         self.pupil = None # ellipse object in whole frame
 
-    def clear_all(self):
-        """
-        clear all frame information, only keep processing parameters
-        """
-        self.clear_history()
-        self.clear()
-
-        # # some stuff we want to track between frames
-        # self.last_pupil = None  # ellipse object
-        # # self.last_pupil_intensity = None
-        # self.last_led = None  # ellipse object
-        # # self.last_pupil_velocity = (0, 0) # not used
-
     def load_parameters(self, pupil_is_equalize, led_roi, pupil_roi, led_binary_threshold, pupil_binary_threshold,
                         led_blur, pupil_blur, led_openclose_iter, pupil_openclose_iter, led_min_size, pupil_min_size,
                         led_max_size, led_mask_dilation):
@@ -331,34 +318,15 @@ class PupilLedDetector(object):
 
         self.clear()
 
-    def load_frame(self, frame, is_clear_history=False):
+    def load_frame(self, frame):
         """
         load next frame, keep processing history
         :return:
         """
 
-        if is_clear_history:
-            self.clear_all()
-        else:
-            if self.led is None:
-                self.last_led = None
-            else:
-                # self.last_led = self.led.copy()
-                self.last_led = self.led
-
-            if self.pupil is None:
-                self.last_pupil = None
-            else:
-                # self.last_pupil = self.pupil.copy()
-                self.last_pupil = self.pupil
-
-            self.clear()
+        self.clear()
         self.original = frame
         self.annotated = np.array(frame)
-
-    def clear_history(self):
-        self.last_led = None
-        self.last_pupil = None
 
     def _find_led(self):
 
@@ -385,7 +353,7 @@ class PupilLedDetector(object):
         else:
             return False
 
-    def _find_pupil(self):
+    def _find_pupil(self, last_pupil=None):
 
         self.pupil_region = apply_roi(self.preprocessed, self.pupil_roi)
 
@@ -404,7 +372,7 @@ class PupilLedDetector(object):
         _, pupil_cons, _ = cv2.findContours(image=self.pupil_openclosed, mode=cv2.RETR_TREE,
                                             method=cv2.CHAIN_APPROX_SIMPLE)
 
-        pupil, pupil_cons = self._filter_pupil_contours(pupil_cons)
+        pupil, pupil_cons = self._filter_pupil_contours(pupil_cons, last_pupil=last_pupil)
 
         # print(pupil)
         # print(pupil_cons)
@@ -485,7 +453,7 @@ class PupilLedDetector(object):
 
             return new_cons
 
-    def _filter_pupil_contours(self, cons):
+    def _filter_pupil_contours(self, cons, last_pupil=None):
         """
         for each detected potential pupil contour after LED masking, pick the
         roundest one and the one closest to the pupil from last frame
@@ -514,8 +482,8 @@ class PupilLedDetector(object):
                 if not ells_area: # no pupil ellipse bigger than self.pupil_min_size
                     return None, None
                 else:
-                    if self.last_pupil: # there is last pupil pick the closest one
-                        last_local_pupil = self.last_pupil.into_roi(self.pupil_roi)
+                    if last_pupil is not None: # there is last pupil pick the closest one
+                        last_local_pupil = last_pupil.into_roi(self.pupil_roi)
                         dises = [dist2d(ell.center, last_local_pupil.center) for ell in ells_area]
                         return ells_area[int(np.argmin(dises))], cons_area
                     else: # no last pupil information pick the roundest one
@@ -530,12 +498,12 @@ class PupilLedDetector(object):
         # if self.pupil_is_equalize:
         #     self.preprocessed = cv2.equalizeHist(self.preprocessed)
 
-    def detect(self):
+    def detect(self, last_pupil=None):
         self._pre_process()
         is_led = self._find_led()
 
         if is_led:
-            is_pupil = self._find_pupil()
+            is_pupil = self._find_pupil(last_pupil=last_pupil)
 
             if is_pupil:
                 return True
