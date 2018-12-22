@@ -45,7 +45,8 @@ class EyetrackerGui(QtWidgets.QMainWindow):
         self.ui.lineEdit_pupilMinSize.textChanged.connect(self._update_parameters)
 
         self.ui.horizontalSlider_currentFrame.valueChanged.connect(self._slider_value_changed)
-        self.ui.lineEdit_currframeNum.textChanged.connect(self._frame_ind_specified)
+        # self.ui.lineEdit_currframeNum.textChanged.connect(self._frame_ind_specified)
+        self.ui.lineEdit_currframeNum.returnPressed.connect(self._frame_ind_specified)
 
         self.ui.pushButton_loadMovie.clicked.connect(self.load_movie)
         self.ui.pushButton_clear.clicked.connect(self.clear)
@@ -121,6 +122,7 @@ class EyetrackerGui(QtWidgets.QMainWindow):
         self.movie_frame_shape = (100, 100) # (height, width)
         self.movie_fps = None
         self.curr_frame_ind = None
+        self.last_pupil=(None, None) # (frame ind, pupil Ellipse)
         self._show_movie_info()
 
         # set buttons
@@ -179,7 +181,8 @@ class EyetrackerGui(QtWidgets.QMainWindow):
 
                 # display frame
                 self.curr_frame_ind = 0
-                self._show_one_frame(frame_ind=self.curr_frame_ind, is_clear_history=True)
+                self._show_one_frame(frame_ind=self.curr_frame_ind)
+                self.last_pupil = (0, self.detector.pupil)
 
             else: # no frame in the movie
                 print('\nno frame in the selected movie file: \n{}'.format(self.movie_path))
@@ -189,27 +192,36 @@ class EyetrackerGui(QtWidgets.QMainWindow):
         # print('slider bar value changed')
 
         self.curr_frame_ind = int(self.ui.horizontalSlider_currentFrame.value())
-        self._show_one_frame(frame_ind=self.curr_frame_ind, is_clear_history=False)
+        self._show_one_frame(frame_ind=self.curr_frame_ind)
 
     def _frame_ind_specified(self):
 
         # print('frame index specified.')
 
+        def go_back():
+            self.ui.lineEdit_currframeNum.blockSignals(True)
+            self.ui.lineEdit_currframeNum.setText(str(self.curr_frame_ind))
+            self.ui.lineEdit_currframeNum.blockSignals(False)
+
         try:
             frame_i = int(self.ui.lineEdit_currframeNum.text())
         except ValueError:
-            frame_i = self.curr_frame_ind
+            go_back()
             print('input frame number should be a unsigned integer.')
+            return
 
         if frame_i < 0:
             print('input frame index should be a unsigned integer.')
+            go_back()
         elif frame_i >= self.movie_frame_num:
             print('input frame index ({}) should be less than total frame number ({}).'
                   .format(frame_i, self.movie_frame_num))
+            go_back()
+        elif frame_i == self.curr_frame_ind:
+            return
         else:
             self.curr_frame_ind = frame_i
-
-        self._show_one_frame(frame_ind=self.curr_frame_ind, is_clear_history=False)
+            self._show_one_frame(frame_ind=self.curr_frame_ind)
 
     def _playpause_clicked(self):
 
@@ -385,19 +397,32 @@ class EyetrackerGui(QtWidgets.QMainWindow):
             print('frame index ({}) outside of movie frame range (0, {}).'.format(frame_ind, self.movie_frame_num))
             return
         else:
+
+            # setup display without triggering detection
+            self.ui.horizontalSlider_currentFrame.blockSignals(True)
+            self.ui.lineEdit_currframeNum.blockSignals(True)
             self.ui.horizontalSlider_currentFrame.setValue(frame_ind)
             self.ui.lineEdit_currframeNum.setText(str(frame_ind))
+            self.ui.horizontalSlider_currentFrame.blockSignals(False)
+            self.ui.lineEdit_currframeNum.blockSignals(False)
+
             self.video_capture.set(cv2.CAP_PROP_POS_FRAMES, frame_ind)
             _, curr_frame = self.video_capture.read()
-            self.detector.load_frame(frame=curr_frame, is_clear_history=is_clear_history)
-            self.detector.detect()
+            self.detector.load_frame(frame=curr_frame)
 
-            print('\ncurr_frame_id: {}\n'.format(frame_ind))
-            if self.detector.last_pupil is None:
-                print('\tNo last pupil')
+
+            if self.last_pupil[0] is None:
+                # print('frame index: {}, detect without history.'.format(frame_ind))
+                self.detector.detect(last_pupil=None)
             else:
-                print(type(self.detector.last_pupil))
-                print('\t' + str(self.detector.last_pupil.center))
+                if frame_ind - self.last_pupil[0] == 1:
+                    # print('frame index: {}, detect with history.'.format(frame_ind))
+                    self.detector.detect(last_pupil=self.last_pupil[1])
+                else:
+                    # print('frame index: {}, detect without history.'.format(frame_ind))
+                    self.detector.detect(last_pupil=None)
+
+            self.last_pupil = (frame_ind, self.detector.pupil)
 
             self._show_image(self.detector.annotated)
 
@@ -410,7 +435,7 @@ class EyetrackerGui(QtWidgets.QMainWindow):
 
         # print("trackerGUI showing next frame: {}".format(self.curr_frame_ind))
 
-        self._show_one_frame(frame_ind=self.curr_frame_ind, is_clear_history=False)
+        self._show_one_frame(frame_ind=self.curr_frame_ind)
 
     def _qt_roi_2_detector_roi(self, qt_roi):
 
