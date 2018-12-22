@@ -66,6 +66,7 @@ class Eyetracker(object):
         self.led_positions = None
         self.led_shape = None
         self.output_movie = None
+        self.last_pupil = (None, None)
 
     def load_file(self, input_movie_path):
 
@@ -109,6 +110,8 @@ class Eyetracker(object):
                                                 fourcc=cv2.VideoWriter_fourcc(*FOURCC),
                                                 fps=FPS,
                                                 frameSize=self.frame_shape)
+            self.last_pupil = (0, None)
+
         else:
             print('No frames in video file: \n{}\n Do nothing.'.format(self.input_movie_path))
             self.input_movie.release()
@@ -156,12 +159,12 @@ class Eyetracker(object):
             self.input_movie.set(cv2.CAP_PROP_POS_FRAMES, frame_i)
             _, curr_frame = self.input_movie.read()
 
-            if is_with_history and frame_i != 0:
-                self.detector.load_frame(frame=curr_frame, is_clear_history=True)
-            else:
-                self.detector.load_frame(frame=curr_frame, is_clear_history=False)
+            self.detector.load_frame(frame=curr_frame)
 
-            self.detector.detect()
+            if is_with_history:
+                self.detector.detect(last_pupil=self.last_pupil[1])
+            else:
+                self.detector.detect(last_pupil=None)
 
             if self.detector.led is not None:
                 self.led_positions[frame_i, :] = self.detector.led.center
@@ -176,6 +179,8 @@ class Eyetracker(object):
                                                 self.detector.pupil.angle]
 
             self.output_movie.write(self.detector.annotated)
+
+            self.last_pupil = (frame_i, self.detector.pupil)
 
         self.output_movie.release()
 
