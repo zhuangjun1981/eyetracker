@@ -172,3 +172,6 @@ dev/chrisdev/MouseViewerII0.4/hah.png
 dev/chrisdev/MouseViewerII0.4/hur.png
 dev/chrisdev/MouseViewerII0.4/wut.png
 dev/chrisdev/POV-Ray_Python/ini/New Text Document.txt
+
+# test movie files
+*.avi
