@@ -5,7 +5,7 @@ import numpy as np
 import eyetracker.detector as dt
 import matplotlib.pyplot as plt
 
-class TestImageProcessor(unittest.TestCase):
+class TestDetector(unittest.TestCase):
 
     def setUp(self):
 
@@ -128,6 +128,76 @@ class TestImageProcessor(unittest.TestCase):
         det.detect(last_pupil=last_pupil)
         det.show_results()
         plt.show()
+
+    def test_PupilLedDetector_detect4(self):
+
+        frame3 = np.load(os.path.join('test_files', 'test_img3.npy'))
+        det = dt.PupilLedDetector(led_roi=(275, 375, 233, 353),
+                                  pupil_roi=(176, 426, 146, 446),
+                                  led_binary_threshold=240,
+                                  led_openclose_iter=1,
+                                  led_mask_dilation=20,
+                                  pupil_blur=10,
+                                  pupil_binary_threshold=220,
+                                  pupil_openclose_iter=5,
+                                  pupil_min_size=500)
+        det.load_frame(frame=frame3)
+        det.detect()
+        det.show_results()
+        plt.show()
+        source1 = det.pupil_blurred
+        th1_o = det.pupil_thresholded
+
+        frame1 = np.load(os.path.join('test_files', 'test_img.npy'))
+        det = dt.PupilLedDetector(led_roi=(200, 300, 280, 400),
+                                  pupil_roi=(100, 350, 200, 500),
+                                  led_binary_threshold=240,
+                                  led_openclose_iter=1,
+                                  led_mask_dilation=20,
+                                  pupil_blur=10,
+                                  pupil_binary_threshold=220,
+                                  pupil_openclose_iter=5,
+                                  pupil_min_size=500)
+
+        det.load_frame(frame=frame1)
+        det.detect()
+        det.show_results()
+        plt.show()
+        source2 = det.pupil_blurred
+        th2_o = det.pupil_thresholded
+
+        # th1 = cv2.adaptiveThreshold(src=source1,
+        #                             maxValue=255,
+        #                             adaptiveMethod=cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+        #                             thresholdType=cv2.THRESH_BINARY,
+        #                             blockSize=33,
+        #                             C=0)
+        #
+        # th2 = cv2.adaptiveThreshold(src=source2,
+        #                             maxValue=255,
+        #                             adaptiveMethod=cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+        #                             thresholdType=cv2.THRESH_BINARY,
+        #                             blockSize=33,
+        #                             C=0)
+        #
+        # f = plt.figure(figsize=(10, 5))
+        # f.suptitle('adaptive thr')
+        # ax1 = f.add_subplot(121)
+        # ax1.imshow(th1, cmap='gray')
+        # ax1.set_axis_off()
+        # ax2 = f.add_subplot(122)
+        # ax2.imshow(th2, cmap='gray')
+        # ax2.set_axis_off()
+        #
+        # f2 = plt.figure(figsize=(10, 5))
+        # f2.suptitle('global thr')
+        # ax3 = f2.add_subplot(121)
+        # ax3.imshow(th1_o, cmap='gray')
+        # ax3.set_axis_off()
+        # ax4 = f2.add_subplot(122)
+        # ax4.imshow(th2_o, cmap='gray')
+        # ax4.set_axis_off()
+        # plt.show()
 
     def test_temp(self):
 

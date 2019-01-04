@@ -362,8 +362,20 @@ class PupilLedDetector(object):
 
         self.pupil_blurred = cv2.blur(src=self.pupil_region, ksize=(self.pupil_blur, self.pupil_blur))
         self.pupil_blurred = 255 - self.pupil_blurred
-        _, self.pupil_thresholded = cv2.threshold(src=self.pupil_blurred, thresh=self.pupil_binary_thresh,
+
+        # adaptive threshold
+        self.pupil_thresholded = cv2.adaptiveThreshold(src=self.pupil_blurred,
+                                                       maxValue=255,
+                                                       adaptiveMethod=cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+                                                       thresholdType=cv2.THRESH_BINARY,
+                                                       blockSize=91,
+                                                       C=0)
+        self.pupil_thresholded = cv2.blur(src=self.pupil_thresholded, ksize=(self.pupil_blur, self.pupil_blur))
+
+        # global threshold
+        _, self.pupil_thresholded = cv2.threshold(src=self.pupil_thresholded, thresh=self.pupil_binary_thresh,
                                                   maxval=255, type=cv2.THRESH_BINARY)
+
         pupil_openclose_ker = np.ones((self.pupil_openclose_iter, self.pupil_openclose_iter), dtype=np.uint8)
         self.pupil_openclosed = cv2.morphologyEx(src=self.pupil_thresholded, op=cv2.MORPH_OPEN,
                                                  kernel=pupil_openclose_ker)
