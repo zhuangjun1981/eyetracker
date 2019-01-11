@@ -357,20 +357,42 @@ class PupilLedDetector(object):
 
         self.pupil_region = apply_roi(self.preprocessed, self.pupil_roi)
 
-        if self.pupil_is_equalize:
-            self.pupil_region = cv2.equalizeHist(src=self.pupil_region)
+        # if self.pupil_is_equalize:
+        #     self.pupil_region = cv2.equalizeHist(src=self.pupil_region)
+
+        self.pupil_region = cv2.subtract(255, self.pupil_region)
 
         self.pupil_blurred = cv2.blur(src=self.pupil_region, ksize=(self.pupil_blur, self.pupil_blur))
-        self.pupil_blurred = 255 - self.pupil_blurred
 
+        if self.pupil_is_equalize:
+            self.pupil_blurred = cv2.equalizeHist(src=self.pupil_blurred)
+
+
+        ###============================weird way of dynamic thresholding================================================
         # adaptive threshold
         self.pupil_thresholded = cv2.adaptiveThreshold(src=self.pupil_blurred,
                                                        maxValue=255,
                                                        adaptiveMethod=cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
                                                        thresholdType=cv2.THRESH_BINARY,
-                                                       blockSize=91,
-                                                       C=0)
-        self.pupil_thresholded = cv2.blur(src=self.pupil_thresholded, ksize=(self.pupil_blur, self.pupil_blur))
+                                                       blockSize=31,
+                                                       C=-2)
+        # plt.imshow(self.pupil_thresholded)
+        # plt.show()
+
+        self.pupil_thresholded = cv2.blur(src=self.pupil_thresholded, ksize=(10, 10))
+
+        # plt.imshow(self.pupil_thresholded)
+        # plt.show()
+
+        self.pupil_thresholded[self.pupil_thresholded > 170] = 255
+        self.pupil_thresholded[self.pupil_thresholded < 150] = 0
+
+        # plt.imshow(self.pupil_thresholded)
+        # plt.show()
+
+        self.pupil_thresholded = cv2.add(self.pupil_thresholded, self.pupil_blurred)
+        ###============================weird way of dynamic thresholding================================================
+
 
         # global threshold
         _, self.pupil_thresholded = cv2.threshold(src=self.pupil_thresholded, thresh=self.pupil_binary_thresh,

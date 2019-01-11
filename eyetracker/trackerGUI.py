@@ -66,6 +66,8 @@ class EyetrackerGui(QtWidgets.QMainWindow):
 
     def clear(self):
 
+        print('starting clear')
+
         if hasattr(self, 'status') and self.status == 2: # if movie is playing
             self._pause_movie()
 
@@ -142,7 +144,11 @@ class EyetrackerGui(QtWidgets.QMainWindow):
 
         self.status = 0
 
+        print('here')
+
     def load_movie(self):
+
+        print('loading movie')
 
         if self.movie_path is not None:
             last_dir = os.path.dirname(self.movie_path)
@@ -224,6 +230,8 @@ class EyetrackerGui(QtWidgets.QMainWindow):
             self._show_one_frame(frame_ind=self.curr_frame_ind)
 
     def _playpause_clicked(self):
+
+        print('play/paused clicked')
 
         if self.status == 0:
             print('no movie loaded. Cannot play or pause movie.')
@@ -327,7 +335,7 @@ class EyetrackerGui(QtWidgets.QMainWindow):
         self._show_detector_parameters()
 
         if self.status == 1:
-            self._show_one_frame(frame_ind=self.curr_frame_ind, is_clear_history=True)
+            self._show_one_frame(frame_ind=self.curr_frame_ind)
 
     def _play_movie(self):
 
@@ -381,12 +389,15 @@ class EyetrackerGui(QtWidgets.QMainWindow):
             # change status
             self.status = 1
 
-    def _show_one_frame(self, frame_ind=None, is_clear_history=False):
+            print('movie paused.')
+
+    def _show_one_frame(self, frame_ind=None):
 
         # print('showing one frame')
 
         if frame_ind is None:
             frame_ind = self.curr_frame_ind
+            print(frame_ind)
 
         if self.status == 0:
             print('No movie loaded. Cannot show frame.')
@@ -422,8 +433,11 @@ class EyetrackerGui(QtWidgets.QMainWindow):
                     # print('frame index: {}, detect without history.'.format(frame_ind))
                     self.detector.detect(last_pupil=None)
 
-            self.last_pupil = (frame_ind, self.detector.pupil)
+            # not sure if this check is a good or bad thing
+            # if self.detector.pupil is not None:
+            #     self.last_pupil = (frame_ind, self.detector.pupil)
 
+            self.last_pupil = (frame_ind, self.detector.pupil)
             self._show_image(self.detector.annotated)
 
             # show result text

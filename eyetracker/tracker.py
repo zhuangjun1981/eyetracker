@@ -180,6 +180,10 @@ class Eyetracker(object):
 
             self.output_movie.write(self.detector.annotated)
 
+            # not sure if this check is a good or bad thing
+            # if self.detector.pupil is not None:
+            #     self.last_pupil = (frame_i, self.detector.pupil)
+
             self.last_pupil = (frame_i, self.detector.pupil)
 
         self.output_movie.release()

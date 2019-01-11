@@ -138,9 +138,10 @@ class TestDetector(unittest.TestCase):
                                   led_openclose_iter=1,
                                   led_mask_dilation=20,
                                   pupil_blur=10,
-                                  pupil_binary_threshold=220,
+                                  pupil_binary_threshold=250,
                                   pupil_openclose_iter=5,
-                                  pupil_min_size=500)
+                                  pupil_min_size=500,
+                                  pupil_is_equalize=True)
         det.load_frame(frame=frame3)
         det.detect()
         det.show_results()
@@ -155,9 +156,10 @@ class TestDetector(unittest.TestCase):
                                   led_openclose_iter=1,
                                   led_mask_dilation=20,
                                   pupil_blur=10,
-                                  pupil_binary_threshold=220,
-                                  pupil_openclose_iter=5,
-                                  pupil_min_size=500)
+                                  pupil_binary_threshold=250,
+                                  pupil_openclose_iter=10,
+                                  pupil_min_size=500,
+                                  pupil_is_equalize=True)
 
         det.load_frame(frame=frame1)
         det.detect()
