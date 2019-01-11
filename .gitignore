@@ -175,3 +175,6 @@ dev/chrisdev/POV-Ray_Python/ini/New Text Document.txt
 
 # test movie files
 *.avi
+
+# test config files
+/eyetracker/tests/test_files/*.yml

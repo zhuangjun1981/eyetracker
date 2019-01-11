@@ -66,7 +66,7 @@ class EyetrackerGui(QtWidgets.QMainWindow):
 
     def clear(self):
 
-        print('starting clear')
+        # print('self.clear()')
 
         if hasattr(self, 'status') and self.status == 2: # if movie is playing
             self._pause_movie()
@@ -143,8 +143,6 @@ class EyetrackerGui(QtWidgets.QMainWindow):
         self.ui.textBrowser_results.setText('')
 
         self.status = 0
-
-        print('here')
 
     def load_movie(self):
 
@@ -244,42 +242,46 @@ class EyetrackerGui(QtWidgets.QMainWindow):
 
     def _load_config_clicked(self):
 
-        if (self.config_path is not None) and (os.path.isfile(self.config_path)):
-            print('\nloading existing config file: \n{}'.format(self.config_path))
-            with open(self.config_path, 'r') as config_f:
-                param_dict = yaml.load(config_f)
-        else:
-            print('\ncannnot find existing config file. load the default detector parameters.')
-            detector = dt.PupilLedDetector()
-            param_dict = detector.get_parameter_dict()
+        # print('self._load_config_clicked()')
 
         if self.movie_path is None:
-            self.led_roi.setPos((40, 40))
-            self.led_roi.setSize((20, 20))
-            self.pupil_roi.setPos((20, 20))
-            self.pupil_roi.setSize((60, 60))
+            # self.led_roi.setPos((40, 40))
+            # self.led_roi.setSize((20, 20))
+            # self.pupil_roi.setPos((20, 20))
+            # self.pupil_roi.setSize((60, 60))
+            print('self.movie_path is None. Cannot load config file.')
 
-        if param_dict['led_roi'] is None:
-            self.led_roi.setPos((0, 0))
-            self.led_roi.setSize((self.movie_frame_shape[1], self.movie_frame_shape[0]))
-            param_dict['led_roi'] = self._qt_roi_2_detector_roi(self.led_roi)
         else:
-            led_roi_pos, led_roi_size = self._detector_roi_2_qt_roi(param_dict['led_roi'])
-            self.led_roi.setPos(led_roi_pos)
-            self.led_roi.setSize(led_roi_size)
+            if (self.config_path is not None) and (os.path.isfile(self.config_path)):
+                print('\nloading existing config file: \n{}'.format(self.config_path))
+                with open(self.config_path, 'r') as config_f:
+                    param_dict = yaml.load(config_f)
+            else:
+                print('\ncannnot find existing config file. load the default detector parameters.')
+                detector = dt.PupilLedDetector()
+                param_dict = detector.get_parameter_dict()
 
-        if param_dict['pupil_roi'] is None:
-            self.pupil_roi.setPos((0, 0))
-            self.pupil_roi.setSize((self.movie_frame_shape[1], self.movie_frame_shape[0]))
-            param_dict['pupil_roi'] = self._qt_roi_2_detector_roi(self.pupil_roi)
-        else:
-            pupil_roi_pos, pupil_roi_size = self._detector_roi_2_qt_roi(param_dict['pupil_roi'])
-            self.pupil_roi.setPos(pupil_roi_pos)
-            self.pupil_roi.setSize(pupil_roi_size)
+            if param_dict['led_roi'] is None:
+                self.led_roi.setPos((0, 0))
+                self.led_roi.setSize((self.movie_frame_shape[1], self.movie_frame_shape[0]))
+                param_dict['led_roi'] = self._qt_roi_2_detector_roi(self.led_roi)
+            else:
+                led_roi_pos, led_roi_size = self._detector_roi_2_qt_roi(param_dict['led_roi'])
+                self.led_roi.setPos(led_roi_pos)
+                self.led_roi.setSize(led_roi_size)
 
-        self.detector.load_parameters(**param_dict)
-        self._show_detector_parameters()
-        print(self.detector.param_str)
+            if param_dict['pupil_roi'] is None:
+                self.pupil_roi.setPos((0, 0))
+                self.pupil_roi.setSize((self.movie_frame_shape[1], self.movie_frame_shape[0]))
+                param_dict['pupil_roi'] = self._qt_roi_2_detector_roi(self.pupil_roi)
+            else:
+                pupil_roi_pos, pupil_roi_size = self._detector_roi_2_qt_roi(param_dict['pupil_roi'])
+                self.pupil_roi.setPos(pupil_roi_pos)
+                self.pupil_roi.setSize(pupil_roi_size)
+
+            self.detector.load_parameters(**param_dict)
+            self._show_detector_parameters()
+            print(self.detector.param_str)
 
     def _save_config_clicked(self):
         if self.status == 0:
@@ -480,6 +482,10 @@ class EyetrackerGui(QtWidgets.QMainWindow):
 
     def _show_detector_parameters(self):
 
+        # print('self._show_detector_parameters()')
+
+        self._block_param_line_edit_signal()
+
         self.ui.label_ledROIValue.setText(str(self.detector.led_roi))
         self.ui.lineEdit_ledBlur.setText(str(self.detector.led_blur))
         self.ui.lineEdit_ledBinary.setText(str(self.detector.led_binary_thresh))
@@ -494,6 +500,43 @@ class EyetrackerGui(QtWidgets.QMainWindow):
         self.ui.lineEdit_pupilBinary.setText(str(self.detector.pupil_binary_thresh))
         self.ui.lineEdit_pupilOpenClose.setText(str(self.detector.pupil_openclose_iter))
         self.ui.lineEdit_pupilMinSize.setText('{:8.2f}'.format(self.detector.pupil_min_size))
+
+        self._enable_params_line_edit_signal()
+
+    def _block_param_line_edit_signal(self):
+
+        # print('self._block_param_line_edit_signal()')
+
+        self.ui.lineEdit_ledBlur.blockSignals(True)
+        self.ui.lineEdit_ledBinary.blockSignals(True)
+        self.ui.lineEdit_ledOpenClose.blockSignals(True)
+        self.ui.lineEdit_ledMinSize.blockSignals(True)
+        self.ui.lineEdit_ledMaxSize.blockSignals(True)
+        self.ui.lineEdit_ledMaskDilation.blockSignals(True)
+
+        self.ui.checkBox_pupilEqualize.blockSignals(True)
+        self.ui.lineEdit_pupilBlur.blockSignals(True)
+        self.ui.lineEdit_pupilBinary.blockSignals(True)
+        self.ui.lineEdit_pupilOpenClose.blockSignals(True)
+        self.ui.lineEdit_pupilMinSize.blockSignals(True)
+
+    def _enable_params_line_edit_signal(self):
+
+        # print('self._enable_params_line_edit_signal()')
+
+        self.ui.lineEdit_ledBlur.blockSignals(False)
+        self.ui.lineEdit_ledBinary.blockSignals(False)
+        self.ui.lineEdit_ledOpenClose.blockSignals(False)
+        self.ui.lineEdit_ledMinSize.blockSignals(False)
+        self.ui.lineEdit_ledMaxSize.blockSignals(False)
+        self.ui.lineEdit_ledMaskDilation.blockSignals(False)
+
+        self.ui.checkBox_pupilEqualize.blockSignals(False)
+        self.ui.lineEdit_pupilBlur.blockSignals(False)
+        self.ui.lineEdit_pupilBinary.blockSignals(False)
+        self.ui.lineEdit_pupilOpenClose.blockSignals(False)
+        self.ui.lineEdit_pupilMinSize.blockSignals(False)
+
 
     @property
     def config_path(self):
