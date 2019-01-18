@@ -309,10 +309,10 @@ class EyetrackerGui(QtWidgets.QMainWindow):
             tracker_path = os.path.join(PACKAGE_DIR, 'tracker.py')
             movie_path = self.movie_path
             config_path = self.config_path
-            cmd = "start {} {} {} -c {}".format(python_path,
-                                                tracker_path,
-                                                movie_path,
-                                                config_path)
+            cmd = 'start && "{}" "{}" "{}" -c {}'.format(python_path,
+                                                         tracker_path,
+                                                         movie_path,
+                                                         config_path)
             os.system(cmd)
 
     def _update_parameters(self):
