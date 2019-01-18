@@ -136,6 +136,10 @@ class Eyetracker(object):
 
     def process_movie(self, is_with_history=True):
 
+        print('\nprocessing movie file:\n{}'.format(self.input_movie_path))
+        print('\nusing config file:\n{}'.format(self._cfg_file_path))
+        print('\n\n')
+
         time0 = time.time()
 
         for frame_i in range(self.frame_num):
@@ -150,11 +154,11 @@ class Eyetracker(object):
             # if frame_i % (self.frame_num / 10) == 0:
             if frame_i % int(self.frame_num / 100) == 0:
                 time_used_sec = time.time() - time0
-                print('{:7.2f} min: frame processed: {:10d}, {:02d}%. fps: {:7.2f}'.
+                print('{:6.2f} min:    frame processed:{:7d} ({:02d}%).    fps: {:5.2f}'.
                       format(time_used_sec / 60.,
                              frame_i,
                              int(100 * frame_i / self.frame_num),
-                             frame_i / (time_used_sec + 1)))
+                             frame_i / (time_used_sec + 1)), end='\r')
 
             self.input_movie.set(cv2.CAP_PROP_POS_FRAMES, frame_i)
             _, curr_frame = self.input_movie.read()
@@ -186,13 +190,14 @@ class Eyetracker(object):
 
             self.last_pupil = (frame_i, self.detector.pupil)
 
+        print('\n\n')
         self.output_movie.release()
 
         self._save_cfg()
         self._save_hdf5()
         self.clear()
 
-        print('{:08.2f} minutes. Done.'.format((time.time() - time0) / 60.))
+        print('\n\n{:.2f} minutes. Done.'.format((time.time() - time0) / 60.))
 
     def _save_cfg(self):
 
@@ -291,6 +296,7 @@ def main():
             et.load_file(input_movie_path=infile)
             et.load_cfg(config_file_path=cfgfile)
             et.process_movie(is_with_history=True)
+            input('')
     except Exception as e:
         print(type(e), e)
         input("Processing completed with errors. Press enter to close...")
