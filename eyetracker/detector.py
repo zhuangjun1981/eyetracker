@@ -7,21 +7,21 @@ import cv2
 import matplotlib.pyplot as plt
 
 
-DEFAULT_PARA = {'pupil_is_equalize':True,
+DEFAULT_PARA = {'pupil_is_equalize':False,
                 'led_roi':(200, 300, 280, 400),
                 'pupil_roi':(100, 350, 200, 500),
                 # 'led_roi': None,
                 # 'pupil_roi': None,
-                'led_binary_threshold':200,
-                'pupil_binary_threshold':240,
-                'led_blur':2,
-                'pupil_blur':2,
-                'led_openclose_iter':1,
-                'pupil_openclose_iter':10,
+                'led_binary_threshold':250,
+                'pupil_binary_threshold':180,
+                'led_blur':5,
+                'pupil_blur':10,
+                'led_openclose_iter':5,
+                'pupil_openclose_iter':15,
                 'led_min_size':1,
                 'pupil_min_size':500,
                 'led_max_size':1000,
-                'led_mask_dilation':5}
+                'led_mask_dilation':20}
 
 def apply_roi(img, roi):
     """
