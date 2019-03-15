@@ -1,6 +1,8 @@
 #AIBS Eyetracking Python Package
 
-Created 10/2/14 by Derric Williams
+Created 11/29/2018 by Jun Zhuang
+this is a complete rewrite from Derric Williams's old eye tracking
+software
 
 ![Alt text](http://i.imgur.com/U0P8p1p.png)
 
@@ -36,7 +38,7 @@ Run the GUI using:
 
 ### CLI
 
-Run the CLI using 
+Run the CLI using
 
     python eyetracker.py input_file output_file [-c config_file][-a custom_algorithm]
 
