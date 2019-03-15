@@ -1,7 +1,8 @@
 #AIBS Eyetracking Python Package
 
 Created 11/29/2018 by Jun Zhuang
-this is a complete rewrite from Derric Williams's old eye tracking
+
+This is a complete rewrite from Derric Williams's old eye tracking
 software
 
 ![Alt text](http://i.imgur.com/U0P8p1p.png)
