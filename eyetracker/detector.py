@@ -520,9 +520,19 @@ class PupilLedDetector(object):
                     if last_pupil is not None: # there is last pupil pick the closest one
                         last_local_pupil = last_pupil.into_roi(self.pupil_roi)
                         dises = [dist2d(ell.center, last_local_pupil.center) for ell in ells_area]
-                        return ells_area[int(np.argmin(dises))], cons_area
+                        # return ells_area[int(np.argmin(dises))], cons_area
+                        curr_ell = ells_area[int(np.argmin(dises))]
                     else: # no last pupil information pick the roundest one
-                        return ells_area[int(np.argmax(circ_area))], cons_area
+                        # return ells_area[int(np.argmax(circ_area))], cons_area
+                        curr_ell = ells_area[int(np.argmax(circ_area))]
+
+                    # if the filtered shape is too elliptical return None
+                    long_ax = max(curr_ell.axes)
+                    short_ax = min(curr_ell.axes)
+                    if long_ax / short_ax > 2.:
+                        return None, None
+                    else:
+                        return curr_ell, cons_area
 
         else: # no pupil contours after led masking
             return None, None
