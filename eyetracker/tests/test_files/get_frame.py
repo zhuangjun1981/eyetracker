@@ -4,8 +4,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # fn = 'test3.avi'
-fn = r"F:\data2\rabies_tracing_project\M417949\2018-12-14-deepscope\videomon\181214-M417949-LSNDGC-110--1.avi"
-frame_i = 118288
+fn = r"Z:\chandelier_cell_project\M447219\2019-06-25-deepscope\videomon\190625-M447219-UCSLFC-110--1.avi"
+frame_i = 105
 
 curr_folder = os.path.dirname(os.path.realpath(__file__))
 os.chdir(curr_folder)
@@ -22,4 +22,4 @@ print('frame dtype: {}'.format(frame.dtype))
 plt.imshow(frame)
 plt.show()
 
-np.save('test_img3.npy', frame)
+np.save('test_img4.npy', frame)

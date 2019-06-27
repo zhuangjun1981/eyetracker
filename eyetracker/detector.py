@@ -93,6 +93,60 @@ def get_circularity(contour):
     return 4 * np.pi * area / (peri ** 2)
 
 
+def watershed(img):
+    """
+    segment input binary img with watershed method
+    check the algorithm at
+    https://docs.opencv.org/3.4/d3/db4/tutorial_py_watershed.html
+
+    :return: list of contours of each segmented region
+    """
+
+    # get sure background
+    sure_bg = img.copy()
+
+    # distance transform
+    dis_tran = cv2.distanceTransform(img, cv2.DIST_L2, 3)
+
+    # get sure foreground
+    ret, sure_fg = cv2.threshold(dis_tran, 0.3 * dis_tran.max(), 255, 0)
+    sure_fg = np.uint8(sure_fg)
+
+    # get unknow region
+    unknown = cv2.subtract(sure_bg, sure_fg)
+
+    # separate non-connected regions
+    ret, markers = cv2.connectedComponents(sure_fg)
+
+    # make background 1 not 0
+    markers = markers + 1
+    markers[unknown == 255] = 0
+
+    # get three channel img
+    img_rgb = np.array([img * 255, img * 255, img * 255], dtype=np.uint8)
+
+    # switch to opencv dimension
+    img_rgb = img_rgb.transpose([1, 2, 0])
+
+    # watershed
+    # markers is a 2d array with dtype as np.int32
+    # boders has value -1
+    # background has value 1
+    # each segmented region as value 2, 3, 4 ...
+    markers = cv2.watershed(img_rgb, markers)
+
+    # get the contours from markers
+    cons = []
+    for ind in range(2, np.max(markers) + 1):
+        curr_seg = np.zeros(markers.shape, dtype=np.uint8)
+        curr_seg[markers == ind] = 1
+
+        _, curr_cons, _ = cv2.findContours(curr_seg, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        cons = cons + curr_cons
+
+    return cons
+
+
 class Ellipse(object):
 
     def __init__(self, center, axes, angle):
@@ -363,7 +417,8 @@ class PupilLedDetector(object):
 
         self.pupil_region = cv2.subtract(255, self.pupil_region)
 
-        self.pupil_blurred = cv2.blur(src=self.pupil_region, ksize=(self.pupil_blur, self.pupil_blur))
+        self.pupil_blurred = cv2.blur(src=self.pupil_region, ksize=(self.pupil_blur, self.pupil_blur)) \
+                             - self.pupil_region
 
         if self.pupil_is_equalize:
             self.pupil_blurred = cv2.equalizeHist(src=self.pupil_blurred)
@@ -404,8 +459,10 @@ class PupilLedDetector(object):
                                                  kernel=pupil_openclose_ker)
         self.pupil_openclosed = cv2.morphologyEx(src=self.pupil_openclosed, op=cv2.MORPH_CLOSE,
                                                  kernel=pupil_openclose_ker)
-        _, pupil_cons, _ = cv2.findContours(image=self.pupil_openclosed, mode=cv2.RETR_TREE,
-                                            method=cv2.CHAIN_APPROX_SIMPLE)
+        # _, pupil_cons, _ = cv2.findContours(image=self.pupil_openclosed, mode=cv2.RETR_TREE,
+        #                                     method=cv2.CHAIN_APPROX_SIMPLE)
+
+        pupil_cons = watershed(self.pupil_openclosed)
 
         pupil, pupil_cons = self._filter_pupil_contours(pupil_cons, last_pupil=last_pupil)
 
@@ -503,6 +560,8 @@ class PupilLedDetector(object):
         if cons_masked:
 
             cons_filtered = np.array([con for con in cons_masked if con.shape[0] >= 5])
+            cons_filtered = np.array([cv2.convexHull(con) for con in cons_filtered])
+            cons_filtered = np.array([con for con in cons_filtered if con.shape[0] >= 5])
 
             if len(cons_filtered) == 0: # no pupil contours can be fit to ellipse by cv2
                 return None, None
@@ -527,12 +586,13 @@ class PupilLedDetector(object):
                         curr_ell = ells_area[int(np.argmax(circ_area))]
 
                     # if the filtered shape is too elliptical return None
-                    long_ax = max(curr_ell.axes)
-                    short_ax = min(curr_ell.axes)
-                    if long_ax / short_ax > 2.:
-                        return None, None
-                    else:
-                        return curr_ell, cons_area
+                    # long_ax = max(curr_ell.axes)
+                    # short_ax = min(curr_ell.axes)
+                    # if long_ax / short_ax > 2.:
+                    #     return None, None
+                    # else:
+                    #     return curr_ell, cons_area
+                    return curr_ell, cons_area
 
         else: # no pupil contours after led masking
             return None, None

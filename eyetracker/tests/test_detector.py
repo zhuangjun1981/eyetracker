@@ -168,6 +168,25 @@ class TestDetector(unittest.TestCase):
         source2 = det.pupil_blurred
         th2_o = det.pupil_thresholded
 
+    def test_PupilLedDetector_detect5(self):
+
+        frame4 = np.load(os.path.join('test_files', 'test_img4.npy'))
+        det = dt.PupilLedDetector(led_roi=[220, 291, 295, 362],
+                                  pupil_roi=[157, 333, 241, 439],
+                                  led_binary_threshold=200,
+                                  led_openclose_iter=5,
+                                  led_mask_dilation=20,
+                                  pupil_blur=10,
+                                  pupil_binary_threshold=180,
+                                  pupil_openclose_iter=10,
+                                  pupil_min_size=500,
+                                  pupil_is_equalize=True)
+
+        det.load_frame(frame=frame4)
+        det.detect()
+        det.show_results()
+        plt.show()
+
         # th1 = cv2.adaptiveThreshold(src=source1,
         #                             maxValue=255,
         #                             adaptiveMethod=cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
