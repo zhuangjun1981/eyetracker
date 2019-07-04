@@ -527,12 +527,14 @@ class PupilLedDetector(object):
                         curr_ell = ells_area[int(np.argmax(circ_area))]
 
                     # if the filtered shape is too elliptical return None
-                    long_ax = max(curr_ell.axes)
-                    short_ax = min(curr_ell.axes)
-                    if long_ax / short_ax > 2.:
-                        return None, None
-                    else:
-                        return curr_ell, cons_area
+                    # long_ax = max(curr_ell.axes)
+                    # short_ax = min(curr_ell.axes)
+                    # if long_ax / short_ax > 2.:
+                    #     return None, None
+                    # else:
+                    #     return curr_ell, cons_area
+
+                    return curr_ell, cons_area
 
         else: # no pupil contours after led masking
             return None, None
